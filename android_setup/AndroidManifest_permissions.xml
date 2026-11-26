@@ -1,0 +1,36 @@
+<!--
+  Paste these lines into android/app/src/main/AndroidManifest.xml,
+  inside <manifest ...> and ABOVE the <application> tag.
+-->
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+
+<uses-feature android:name="android.hardware.camera" android:required="false" />
+<uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+
+<!-- Lets the app open the SMS, phone and speech services (Android 11+). -->
+<queries>
+  <intent>
+    <action android:name="android.intent.action.SENDTO" />
+    <data android:scheme="sms" />
+  </intent>
+  <intent>
+    <action android:name="android.intent.action.DIAL" />
+    <data android:scheme="tel" />
+  </intent>
+  <intent>
+    <action android:name="android.speech.RecognitionService" />
+  </intent>
+  <intent>
+    <action android:name="android.intent.action.TTS_SERVICE" />
+  </intent>
+</queries>

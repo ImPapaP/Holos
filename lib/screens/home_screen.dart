@@ -1,0 +1,93 @@
+import 'package:flutter/material.dart';
+
+import '../core/app_state.dart';
+import '../core/profiles.dart';
+import '../core/strings.dart';
+import '../core/theme.dart';
+import '../modules/calm_screen.dart';
+import '../modules/sensor_screen.dart';
+import '../modules/sight_screen.dart';
+import '../modules/sos_screen.dart';
+import '../modules/sound_screen.dart';
+import '../modules/talk_screen.dart';
+import '../widgets/big_tile.dart';
+import 'settings_screen.dart';
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  void _open(BuildContext context, Module m) {
+    if (m == Module.sos) {
+      SosScreen.trigger(reason: 'Manual SOS');
+      return;
+    }
+    final Widget screen = switch (m) {
+      Module.sight => const SightScreen(),
+      Module.sound => const SoundScreen(),
+      Module.talk => const TalkScreen(),
+      Module.calm => const CalmScreen(),
+      Module.sensor => const SensorScreen(),
+      Module.sos => const SizedBox.shrink(),
+    };
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
+
+  Widget _tile(BuildContext context, Module m) {
+    final info = modules[m]!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: BigTile(
+        title: info.title,
+        subtitle: info.desc,
+        icon: info.icon,
+        danger: m == Module.sos,
+        onTap: () => _open(context, m),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppState.I;
+    final p = profiles[state.profile]!;
+    final others = Module.values.where((m) => !p.recommended.contains(m)).toList();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Holos'),
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            iconSize: 32,
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        children: [
+          Text('Profile: ${p.name} (${p.desc})', style: const TextStyle(color: HolosColors.mute, fontSize: 16)),
+          const SizedBox(height: 12),
+          SegmentedButton<Lang>(
+            segments: const [
+              ButtonSegment(value: Lang.en, label: Text('English')),
+              ButtonSegment(value: Lang.fil, label: Text('Filipino')),
+            ],
+            selected: {state.lang},
+            onSelectionChanged: (s) => state.setLang(s.first),
+          ),
+          const SectionLabel('Recommended for you'),
+          for (final m in p.recommended) _tile(context, m),
+          const SectionLabel('Other modules'),
+          for (final m in others) _tile(context, m),
+          if (state.caregiverPhone.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text('Add a caregiver number in Settings so SOS can reach them.',
+                  style: TextStyle(color: HolosColors.accent, fontSize: 16)),
+            ),
+        ],
+      ),
+    );
+  }
+}
