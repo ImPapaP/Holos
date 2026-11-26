@@ -20,7 +20,47 @@ text = manifest.read_text()
 text = re.sub(r'android:label="[^"]*"', 'android:label="Holos"', text, count=1)
 manifest.write_text(text)
 
-# 3) minSdk 24 (Kotlin DSL or Groovy)
+# 3) Force older plugins to compile against a newer Android SDK
+#    (some plugins still say compileSdk 33, but their libraries need 34+).
+KTS_BLOCK = '''// Holos: compile every Android library plugin against SDK 36
+subprojects {
+    afterEvaluate {
+        if (plugins.hasPlugin("com.android.library")) {
+            val ext = extensions.findByName("android")
+            if (ext != null) {
+                try {
+                    ext.javaClass.getMethod("setCompileSdk", java.lang.Integer::class.java).invoke(ext, 36)
+                } catch (e: Exception) {
+                    ext.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType).invoke(ext, 36)
+                }
+            }
+        }
+    }
+}
+
+'''
+GROOVY_BLOCK = '''// Holos: compile every Android library plugin against SDK 36
+subprojects {
+    afterEvaluate { p ->
+        if (p.plugins.hasPlugin("com.android.library")) {
+            p.android { compileSdkVersion 36 }
+        }
+    }
+}
+
+'''
+for name, block in (("build.gradle.kts", KTS_BLOCK), ("build.gradle", GROOVY_BLOCK)):
+    rootGradle = root / "android" / name
+    if not rootGradle.exists():
+        continue
+    g = rootGradle.read_text()
+    if "Holos: compile every" not in g:
+        idx = g.find("allprojects")
+        g = (g[:idx] + block + g[idx:]) if idx >= 0 else (block + g)
+        rootGradle.write_text(g)
+        print(f"compileSdk override added to android/{name}")
+
+# 4) minSdk 24 (Kotlin DSL or Groovy)
 for name in ("build.gradle.kts", "build.gradle"):
     gradle = root / "android/app" / name
     if not gradle.exists():
