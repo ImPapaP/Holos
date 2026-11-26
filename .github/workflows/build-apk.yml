@@ -1,0 +1,60 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create Android project shell (first build only)
+        run: |
+          if [ ! -d android ]; then
+            flutter create --org ph.edu.bulsu --project-name holos --platforms android .
+            rm -rf test
+          fi
+
+      - name: Add permissions and set minSdk 24
+        run: python3 .github/scripts/patch_android.py
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Rename APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk holos.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: holos-apk
+          path: holos.apk
+
+      - name: Publish download on Releases page
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Holos build ${{ github.run_number }}
+          body: |
+            Download **holos.apk** below and open it on an Android phone (Android 7 or newer).
+            Allow "Install unknown apps" when asked.
+          files: holos.apk
