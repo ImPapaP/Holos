@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../core/haptics.dart';
+import '../core/output.dart';
 import '../core/theme.dart';
 import '../widgets/big_tile.dart';
 
@@ -19,6 +22,36 @@ class _TalkScreenState extends State<TalkScreen> {
   int _unit = 140;
   String _letter = '';
 
+  // Tap Reply: tap = dot, hold = dash. A short pause ends the letter, a long pause adds a space.
+  String _code = '';
+  String _reply = '';
+  DateTime? _downAt;
+  Timer? _gapTimer;
+  static final Map<String, String> _decode = {for (final e in morseCode.entries) e.value: e.key};
+
+  void _tapDown() {
+    _gapTimer?.cancel();
+    _downAt = DateTime.now();
+  }
+
+  void _tapUp() {
+    final held = DateTime.now().difference(_downAt ?? DateTime.now()).inMilliseconds;
+    final sym = held < 250 ? '.' : '-';
+    Haptics.play(sym == '.' ? const [40] : const [160]);
+    setState(() => _code += sym);
+    _gapTimer = Timer(const Duration(milliseconds: 800), () {
+      final ch = _decode[_code];
+      setState(() {
+        if (ch != null) _reply += ch;
+        _code = '';
+      });
+      if (ch == null) Haptics.play(const [30, 60, 30, 60, 30]); // unknown pattern
+      _gapTimer = Timer(const Duration(milliseconds: 1200), () {
+        if (_reply.isNotEmpty && !_reply.endsWith(' ')) setState(() => _reply += ' ');
+      });
+    });
+  }
+
   static const _quick = ['Kain na', 'Nandito ako', 'Hintay', 'Tara na', 'OK ka ba', 'Tulog na'];
   static const _speeds = {'Slow': 200, 'Normal': 140, 'Fast': 90};
 
@@ -31,6 +64,7 @@ class _TalkScreenState extends State<TalkScreen> {
 
   @override
   void dispose() {
+    _gapTimer?.cancel();
     _player.stop();
     _text.dispose();
     super.dispose();
@@ -98,6 +132,39 @@ class _TalkScreenState extends State<TalkScreen> {
                   ),
               ],
             ),
+          const SectionLabel('Tap Reply (for the deafblind user)'),
+          Text('Tap for a dot, hold for a dash. Pause to finish a letter. Your family reads or hears the reply.',
+              style: TextStyle(color: GabayColors.mute, fontSize: 16)),
+          const SizedBox(height: 10),
+          Semantics(
+            label: 'Morse tap pad. Tap for dot, hold for dash.',
+            button: true,
+            child: Listener(
+              onPointerDown: (_) => _tapDown(),
+              onPointerUp: (_) => _tapUp(),
+              child: Container(
+                height: 180,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: GabayColors.card, borderRadius: BorderRadius.circular(24), border: Border.all(color: GabayColors.accent, width: 4)),
+                // Visual helper: the dots and dashes being typed.
+                child: Text(_code.isEmpty ? 'TAP' : _code.replaceAll('.', '●').replaceAll('-', '▬'),
+                    style: TextStyle(fontSize: 44, fontWeight: FontWeight.w900, color: GabayColors.accent, letterSpacing: 6)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: GabayColors.card, borderRadius: BorderRadius.circular(18), border: Border.all(color: GabayColors.line, width: 2)),
+            child: Semantics(liveRegion: true, child: Text(_reply.isEmpty ? 'Reply appears here' : _reply, style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: GabayColors.ink))),
+          ),
+          const SizedBox(height: 10),
+          Row(children: [
+            Expanded(child: FilledButton.icon(onPressed: _reply.trim().isEmpty ? null : () => Output.speak(_reply, force: true), icon: const Icon(Icons.volume_up), label: const Text('Speak reply'))),
+            const SizedBox(width: 10),
+            SizedBox(width: 120, child: OutlinedButton(onPressed: () => setState(() { _reply = ''; _code = ''; }), child: const Text('Clear'))),
+          ]),
           const SectionLabel('Quick messages'),
           Wrap(
             spacing: 10,

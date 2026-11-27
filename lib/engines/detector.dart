@@ -6,6 +6,8 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
+import '../core/app_state.dart';
+
 /// One detected object. [box] is normalized (0..1) in the upright (portrait) image.
 class Det {
   final String label;
@@ -15,9 +17,13 @@ class Det {
 
   double get closeness => max(box.width * box.height, pow(box.height, 2) * 0.6).toDouble();
   bool get isVehicle => vehicleLabels.contains(label);
+  bool get isHazard => isVehicle || hazardLabels.contains(label);
 }
 
-const vehicleLabels = {'car', 'motorcycle', 'bus', 'truck', 'bicycle', 'train'};
+const vehicleLabels = {'car', 'motorcycle', 'bus', 'truck', 'bicycle', 'train', 'tricycle', 'jeepney', 'e-trike', 'pedicab'};
+
+/// Labels from Gabay's custom model (see training/) that mean "stop and check".
+const hazardLabels = {'stairs', 'stairs_down', 'stairs_up', 'curb', 'hole', 'open_canal', 'manhole', 'pole', 'wire', 'step'};
 
 /// COCO label map used by EfficientDet-Lite models (index = class id). '???' = unused id.
 const cocoLabels = [
@@ -107,8 +113,17 @@ Future<Uint8List> convertFrameInBackground(FrameData f) => Isolate.run(() => fra
 
 /// EfficientDet-Lite object detector (COCO, 80 everyday objects), running on the phone.
 class Detector {
-  Detector._();
-  static final Detector I = Detector._();
+  Detector._(this.name, {this.optional = false});
+
+  /// Main COCO detector (EfficientDet-Lite).
+  static final Detector I = Detector._('detector');
+
+  /// Optional custom model trained on Philippine streets (stairs, curbs, holes, tricycles, jeepneys...).
+  static final Detector custom = Detector._('custom_detector', optional: true);
+
+  final String name;
+  final bool optional;
+  int lastMs = 0; // time for the last detection, for testing mode
 
   Interpreter? _interp;
   IsolateInterpreter? _iso;
@@ -123,7 +138,9 @@ class Detector {
   Future<bool> load() async {
     if (ready) return true;
     try {
-      final interp = await Interpreter.fromAsset('assets/models/detector.tflite', options: InterpreterOptions()..threads = 4);
+      final opts = InterpreterOptions()..threads = 4;
+      if (AppState.I.speedBoost) opts.useNnApiForAndroid = true; // phone's AI chip, if it has one
+      final interp = await Interpreter.fromAsset('assets/models/$name.tflite', options: opts);
       final input = interp.getInputTensor(0);
       inH = input.shape[1];
       inW = input.shape[2];
@@ -153,17 +170,17 @@ class Detector {
         _scoreIdx = twoD[1];
       }
       try {
-        final txt = await rootBundle.loadString('assets/labels/detector_labels.txt');
+        final txt = await rootBundle.loadString('assets/labels/${name}_labels.txt');
         final lines = txt.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
-        if (lines.length >= 80) labels = lines;
+        if (lines.length >= 80 || optional) labels = lines;
       } catch (_) {}
       _interp = interp;
       _iso = await IsolateInterpreter.create(address: interp.address);
       ready = true;
-      status = 'EfficientDet-Lite ${inW}x$inH (${asFloat ? 'float' : 'int8'})';
+      status = optional ? 'Custom model (${labels.length} classes)' : 'EfficientDet-Lite ${inW}x$inH (${asFloat ? 'float' : 'int8'})${AppState.I.speedBoost ? ' + speed boost' : ''}';
     } catch (e) {
       ready = false;
-      status = 'Detector model missing, using ML Kit fallback';
+      status = optional ? 'Not installed (train with training/ notebook)' : 'Detector model missing, using ML Kit fallback';
     }
     return ready;
   }
@@ -171,6 +188,7 @@ class Detector {
   /// Runs detection on one frame. Returns objects above [minScore].
   Future<List<Det>> detect(FrameData frame) async {
     if (!ready || _iso == null) return const [];
+    final sw = Stopwatch()..start();
     final input = await convertFrameInBackground(frame);
     final outputs = <int, Object>{
       _boxIdx: [List.generate(_n, (_) => List<double>.filled(4, 0))],
@@ -198,6 +216,7 @@ class Detector {
       if (rect.width <= 0 || rect.height <= 0) continue;
       out.add(Det(label, s, rect));
     }
+    lastMs = sw.elapsedMilliseconds;
     return out;
   }
 }

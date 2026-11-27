@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +20,13 @@ class AppState extends ChangeNotifier {
   String caregiverPhone = '';
   bool fallDetection = false;
   double soundSensitivity = 0; // -15 (less sensitive) .. +15 (more sensitive)
+
+  bool testMode = false;
+  bool speedBoost = false;
+  bool offlineCaptions = false;
+  String geminiKey = '';
+  String geminiModel = 'gemini-2.5-flash';
+  List<SavedPlace> places = [];
 
   /// 'auto' or a palette id (night, contrast, day, cb, calm).
   String themeChoice = 'auto';
@@ -40,6 +49,16 @@ class AppState extends ChangeNotifier {
     fallDetection = _prefs.getBool('fall') ?? false;
     soundSensitivity = _prefs.getDouble('sens') ?? 0;
     themeChoice = _prefs.getString('theme') ?? 'auto';
+    testMode = _prefs.getBool('testMode') ?? false;
+    speedBoost = _prefs.getBool('speedBoost') ?? false;
+    offlineCaptions = _prefs.getBool('offlineCaptions') ?? false;
+    geminiKey = _prefs.getString('geminiKey') ?? '';
+    geminiModel = _prefs.getString('geminiModel') ?? 'gemini-2.5-flash';
+    try {
+      places = (jsonDecode(_prefs.getString('places') ?? '[]') as List).map((e) => SavedPlace.fromJson(e as Map<String, dynamic>)).toList();
+    } catch (_) {
+      places = [];
+    }
     GabayThemes.current = palette;
   }
 
@@ -92,4 +111,39 @@ class AppState extends ChangeNotifier {
     await _prefs.setDouble('sens', v);
     notifyListeners();
   }
+
+  Future<void> setFlag(String key, bool v) async {
+    switch (key) {
+      case 'testMode':
+        testMode = v;
+      case 'speedBoost':
+        speedBoost = v;
+      case 'offlineCaptions':
+        offlineCaptions = v;
+    }
+    await _prefs.setBool(key, v);
+    notifyListeners();
+  }
+
+  Future<void> setGemini(String key, String model) async {
+    geminiKey = key.trim();
+    geminiModel = model.trim().isEmpty ? 'gemini-2.5-flash' : model.trim();
+    await _prefs.setString('geminiKey', geminiKey);
+    await _prefs.setString('geminiModel', geminiModel);
+    notifyListeners();
+  }
+
+  Future<void> savePlaces(List<SavedPlace> list) async {
+    places = list;
+    await _prefs.setString('places', jsonEncode(list.map((p) => p.toJson()).toList()));
+    notifyListeners();
+  }
+}
+
+class SavedPlace {
+  final String name;
+  final double lat, lon;
+  const SavedPlace(this.name, this.lat, this.lon);
+  Map<String, dynamic> toJson() => {'name': name, 'lat': lat, 'lon': lon};
+  factory SavedPlace.fromJson(Map<String, dynamic> j) => SavedPlace(j['name'] as String, (j['lat'] as num).toDouble(), (j['lon'] as num).toDouble());
 }

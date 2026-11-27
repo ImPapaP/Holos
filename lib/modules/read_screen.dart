@@ -10,6 +10,8 @@ import '../core/haptics.dart';
 import '../core/output.dart';
 import '../core/strings.dart';
 import '../core/theme.dart';
+import '../services/test_log.dart';
+import '../widgets/verdict_bar.dart';
 
 /// Basa (read): take a photo of a sign, label, medicine box or document;
 /// Gabay finds the text (ML Kit, on the phone) and reads it aloud in large print.
@@ -77,6 +79,7 @@ class _ReadScreenState extends State<ReadScreen> {
         _status = text.isEmpty ? S.t('read_none') : '';
       });
       Output.speak(text.isEmpty ? S.t('read_none') : text, force: true);
+      TestLog.I.log('Basa', text.isEmpty ? 'no text' : text.replaceAll('\n', ' '), latencyMs: null);
       if (text.isEmpty) Haptics.play(Haptics.clear);
     } catch (e) {
       setState(() => _status = 'Could not read: $e');
@@ -145,6 +148,7 @@ class _ReadScreenState extends State<ReadScreen> {
               ),
             ],
           ]),
+          const VerdictBar(),
           if (_status.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(_status, style: TextStyle(fontSize: 18, color: GabayColors.mute)),

@@ -12,6 +12,8 @@ import '../core/theme.dart';
 import '../engines/detector.dart';
 import '../engines/vision_camera.dart';
 import '../services/sound_watcher.dart';
+import '../services/test_log.dart';
+import '../widgets/verdict_bar.dart';
 import 'sos_screen.dart';
 
 /// Lakad (walk): obstacles ahead -> direction + distance -> vibration, voice and visual helpers.
@@ -81,6 +83,7 @@ class _SightScreenState extends State<SightScreen> {
         _lastBuzz = DateTime.now().add(const Duration(milliseconds: 1500));
         Haptics.play(SoundInfo.pattern(e.category));
         Output.speak(SoundInfo.text(e.category));
+        TestLog.I.log('Tunog (Lakad)', SoundInfo.text(e.category), label: e.label, score: e.score);
         if (mounted) setState(() => _soundBanner = e.category);
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) setState(() => _soundBanner = null);
@@ -98,7 +101,7 @@ class _SightScreenState extends State<SightScreen> {
     var bestScore = 0.0;
     for (final d in dets) {
       if (d.closeness < 0.04) continue;
-      final pr = d.closeness * (d.isVehicle ? 1.6 : 1);
+      final pr = d.closeness * (d.isHazard ? 1.6 : 1);
       if (pr > bestScore) {
         bestScore = pr;
         best = _Target(d, dirOf(d), nearOf(d));
@@ -108,6 +111,7 @@ class _SightScreenState extends State<SightScreen> {
     final key = best?.key ?? 'none';
     if (best != null && key != _lastKey && now.difference(_lastSpeak).inMilliseconds > 2000) {
       Output.speak(describeDet(best.det, near: best.near, dir: best.dir));
+      TestLog.I.log('Lakad', describeDet(best.det, near: best.near, dir: best.dir), label: best.det.label, score: best.det.score, latencyMs: Detector.I.lastMs);
       _lastSpeak = now;
     }
     if (key != 'none' || now.difference(_lastSpeak).inMilliseconds > 2000) _lastKey = key;
@@ -129,7 +133,7 @@ class _SightScreenState extends State<SightScreen> {
     if (now.difference(_lastBuzz).inMilliseconds < gaps[t.near]) return;
     _lastBuzz = now;
     final pattern = switch (t.dir) { 'left' => Haptics.left, 'right' => Haptics.right, _ => Haptics.center };
-    Haptics.play((t.det.isVehicle && t.near >= 2) || t.near == 3 ? [...Haptics.danger, 250, ...pattern] : pattern);
+    Haptics.play((t.det.isHazard && t.near >= 2) || t.near == 3 ? [...Haptics.danger, 250, ...pattern] : pattern);
   }
 
   void _togglePause() {
@@ -168,7 +172,7 @@ class _SightScreenState extends State<SightScreen> {
       final inZone = _dets.where((d) => dirOf(d) == zone).toList();
       if (inZone.isEmpty) return Colors.white24;
       final n = inZone.map(nearOf).reduce((a, b) => a > b ? a : b);
-      final vehicle = inZone.any((d) => d.isVehicle);
+      final vehicle = inZone.any((d) => d.isHazard);
       if (n == 3 || (vehicle && n >= 2)) return GabayColors.danger;
       return n == 2 ? GabayColors.accent : GabayColors.accent.withAlpha(110);
     }
@@ -256,7 +260,7 @@ class _SightScreenState extends State<SightScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(children: [
-                          Icon(arrow, size: 52, color: t?.det.isVehicle == true ? GabayColors.danger : GabayColors.accent),
+                          Icon(arrow, size: 52, color: t?.det.isHazard == true ? GabayColors.danger : GabayColors.accent),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Semantics(
@@ -281,6 +285,7 @@ class _SightScreenState extends State<SightScreen> {
                         _zoneBar(),
                         const SizedBox(height: 10),
                         Text('Tap: pause · Double-tap: repeat · Hold: SOS', style: TextStyle(color: GabayColors.mute, fontSize: 14)),
+                        const VerdictBar(),
                       ],
                     ),
                   ),

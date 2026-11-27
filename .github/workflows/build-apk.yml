@@ -43,17 +43,20 @@ jobs:
       - name: Generate launcher icon
         run: dart run flutter_launcher_icons
 
-      - name: Build release APK
-        run: flutter build apk --release
+      - name: Build release APKs (one per phone type, smaller downloads)
+        run: flutter build apk --release --split-per-abi
 
-      - name: Rename APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk gabay.apk
+      - name: Rename APKs
+        run: |
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk gabay.apk
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk gabay-older-phones.apk
+          ls -la gabay*.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: gabay-apk
-          path: gabay.apk
+          path: gabay*.apk
 
       - name: Publish download on Releases page
         uses: softprops/action-gh-release@v2
@@ -61,6 +64,9 @@ jobs:
           tag_name: build-${{ github.run_number }}
           name: Gabay build ${{ github.run_number }}
           body: |
-            Download **gabay.apk** below and open it on an Android phone (Android 7 or newer).
-            Allow "Install unknown apps" when asked.
-          files: gabay.apk
+            Download **gabay.apk** for most phones (64-bit, 2017 and newer).
+            Use **gabay-older-phones.apk** only if gabay.apk says "App not installed" on an old 32-bit phone.
+            Android 7 or newer. Allow "Install unknown apps" when asked.
+          files: |
+            gabay.apk
+            gabay-older-phones.apk

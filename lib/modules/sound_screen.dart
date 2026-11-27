@@ -9,7 +9,9 @@ import '../core/strings.dart';
 import '../core/theme.dart';
 import '../engines/sound_classifier.dart';
 import '../services/sound_watcher.dart';
+import '../services/test_log.dart';
 import '../widgets/big_tile.dart';
+import '../widgets/verdict_bar.dart';
 
 /// Tunog: recognizes important sounds (YAMNet) and shows them as big icons, screen
 /// flashes and vibration. Live captions turn speech into large text.
@@ -38,6 +40,7 @@ class _SoundScreenState extends State<SoundScreen> {
 
   void _onEvent(SoundEvent e) {
     Output.notify(SoundInfo.text(e.category), SoundInfo.pattern(e.category), color: e.urgent ? GabayColors.danger : GabayColors.accent);
+    TestLog.I.log('Tunog', SoundInfo.text(e.category), label: e.label, score: e.score);
     if (!mounted) return;
     setState(() {
       _current = e;
@@ -114,7 +117,7 @@ class _SoundScreenState extends State<SoundScreen> {
       localeId: S.sttLocale,
       listenFor: const Duration(minutes: 5),
       pauseFor: const Duration(seconds: 6),
-      listenOptions: stt.SpeechListenOptions(partialResults: true, listenMode: stt.ListenMode.dictation),
+      listenOptions: stt.SpeechListenOptions(partialResults: true, listenMode: stt.ListenMode.dictation, onDevice: AppState.I.offlineCaptions),
     );
   }
 
@@ -179,6 +182,7 @@ class _SoundScreenState extends State<SoundScreen> {
               ),
             ]),
           ),
+          const VerdictBar(),
           const SizedBox(height: 12),
           if (_alertsOn && _talking)
             Container(

@@ -56,6 +56,7 @@ class VisionCameraState extends State<VisionCamera> {
       return;
     }
     await Detector.I.load();
+    await Detector.custom.load();
     if (!Detector.I.ready) {
       _mlkit = ObjectDetector(options: ObjectDetectorOptions(mode: DetectionMode.stream, classifyObjects: true, multipleObjects: true));
     }
@@ -94,6 +95,10 @@ class VisionCameraState extends State<VisionCamera> {
         final plane = img.planes.first;
         raw = await Detector.I.detect(FrameData(plane.bytes, img.width, img.height, plane.bytesPerRow, rotation,
             Detector.I.inW, Detector.I.inH, Platform.isAndroid, Detector.I.asFloat));
+        if (Detector.custom.ready) {
+          final c = Detector.custom;
+          raw = [...raw, ...await c.detect(FrameData(plane.bytes, img.width, img.height, plane.bytesPerRow, rotation, c.inW, c.inH, Platform.isAndroid, c.asFloat))];
+        }
       } else {
         raw = await _mlkitDetect(img, rotation);
       }
@@ -180,7 +185,7 @@ class DetPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final d in dets) {
       final r = normToScreen(d.box, size, aspect);
-      final color = d.isVehicle ? GabayColors.danger : (identical(d, highlight) ? GabayColors.accent : Colors.white);
+      final color = d.isHazard ? GabayColors.danger : (identical(d, highlight) ? GabayColors.accent : Colors.white);
       if (fill) canvas.drawRRect(RRect.fromRectAndRadius(r, const Radius.circular(10)), Paint()..color = color.withAlpha(70));
       canvas.drawRRect(
         RRect.fromRectAndRadius(r, const Radius.circular(10)),

@@ -48,7 +48,7 @@ class _TouchScreenState extends State<TouchScreen> {
     final prev = _under;
     final entered = hit != null && (prev == null || prev.label != hit.label || prev.box != hit.box);
     if (hit != null && entered) {
-      Haptics.play(hit.isVehicle ? Haptics.danger : (hit.label == 'person' ? [80, 80, 80] : [160]));
+      Haptics.play(hit.isHazard ? Haptics.danger : (hit.label == 'person' ? [80, 80, 80] : [160]));
       Output.speak(describeDet(hit));
     } else if (hit != null && DateTime.now().difference(_lastTick).inMilliseconds > 280) {
       _lastTick = DateTime.now();

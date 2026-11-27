@@ -10,6 +10,8 @@ import '../engines/detector.dart';
 import '../engines/vision_camera.dart';
 import 'sight_screen.dart' show describeDet, nearOf;
 import 'sos_screen.dart';
+import '../services/test_log.dart';
+import '../widgets/verdict_bar.dart';
 
 /// Sweep: point the phone like a flashlight. It buzzes only when the center of the
 /// camera faces an object; closer = stronger and faster. Your hand position tells the direction.
@@ -50,6 +52,7 @@ class _SweepScreenState extends State<SweepScreen> {
       if (key != _lastSpoken) {
         _lastSpoken = key;
         Output.speak(describeDet(best, dir: 'center'));
+        TestLog.I.log('Sweep', describeDet(best, dir: 'center'), label: best.label, score: best.score, latencyMs: Detector.I.lastMs);
       }
     } else {
       _lastSpoken = '';
@@ -65,7 +68,7 @@ class _SweepScreenState extends State<SweepScreen> {
     final gap = (700 - 560 * c).round(); // 700 ms far -> 140 ms very close
     if (DateTime.now().difference(_lastPulse).inMilliseconds < gap) return;
     _lastPulse = DateTime.now();
-    Haptics.pulse(h.isVehicle ? 90 : 45, (60 + 195 * c).round());
+    Haptics.pulse(h.isHazard ? 90 : 45, (60 + 195 * c).round());
   }
 
   @override
@@ -81,7 +84,7 @@ class _SweepScreenState extends State<SweepScreen> {
   Widget build(BuildContext context) {
     final h = _hit;
     final c = h == null ? 0.0 : (h.closeness / 0.4).clamp(0.0, 1.0);
-    final beamColor = h == null ? Colors.white54 : (h.isVehicle || c > 0.7 ? GabayColors.danger : GabayColors.accent);
+    final beamColor = h == null ? Colors.white54 : (h.isHazard || c > 0.7 ? GabayColors.danger : GabayColors.accent);
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
@@ -153,6 +156,7 @@ class _SweepScreenState extends State<SweepScreen> {
                       const SizedBox(height: 10),
                       Text(S.lang == Lang.fil ? 'Igalaw ang telepono nang dahan-dahan. Hold: SOS' : 'Sweep slowly, like a flashlight. Hold: SOS',
                           style: TextStyle(color: GabayColors.mute, fontSize: 14)),
+                      const VerdictBar(),
                     ],
                   ),
                 ),

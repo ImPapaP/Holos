@@ -5,7 +5,9 @@ import '../core/haptics.dart';
 import '../core/output.dart';
 import '../core/theme.dart';
 import '../engines/detector.dart';
+import '../engines/classifier.dart';
 import '../engines/sound_classifier.dart';
+import '../services/test_log.dart';
 import '../widgets/big_tile.dart';
 import 'practice_screen.dart';
 
@@ -19,6 +21,8 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController _name = TextEditingController(text: AppState.I.caregiverName);
   late final TextEditingController _phone = TextEditingController(text: AppState.I.caregiverPhone);
+  late final TextEditingController _key = TextEditingController(text: AppState.I.geminiKey);
+  late final TextEditingController _model = TextEditingController(text: AppState.I.geminiModel);
 
   void _pickTheme(BuildContext context, String id, String name) {
     Haptics.play(Haptics.start);
@@ -30,6 +34,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void dispose() {
     _name.dispose();
     _phone.dispose();
+    _key.dispose();
+    _model.dispose();
     super.dispose();
   }
 
@@ -96,8 +102,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PracticeScreen())),
             ),
             const SectionLabel('AI engines'),
-            Text('Object detection: ${Detector.I.status}\nSound recognition: ${SoundClassifier.I.status}\nText reading: Google ML Kit (on device)',
+            Text('Object detection: ${Detector.I.status}\nCustom street model: ${Detector.custom.status}\nSound recognition: ${SoundClassifier.I.status}\nPeso reader: ${ImageClassifier.peso.status}\nText reading: Google ML Kit (on device)',
                 style: TextStyle(color: GabayColors.mute, fontSize: 16, height: 1.5)),
+            SwitchListTile(
+              value: s.speedBoost,
+              onChanged: (v) => s.setFlag('speedBoost', v),
+              title: const Text('Speed boost', style: TextStyle(fontSize: 20)),
+              subtitle: Text("Uses the phone's AI chip (NNAPI) if it has one. Applies the next time Gabay opens.", style: TextStyle(color: GabayColors.mute)),
+            ),
+            SwitchListTile(
+              value: s.offlineCaptions,
+              onChanged: (v) => s.setFlag('offlineCaptions', v),
+              title: const Text('Offline captions and voice commands', style: TextStyle(fontSize: 20)),
+              subtitle: Text('Uses on-device speech recognition when the phone supports it (Android 13+, language pack installed).', style: TextStyle(color: GabayColors.mute)),
+            ),
+            const SectionLabel('Scene description (Ilarawan)'),
+            Text('Needs a free Google Gemini API key from aistudio.google.com. Photos you describe are sent to Google.',
+                style: TextStyle(color: GabayColors.mute, fontSize: 16)),
+            const SizedBox(height: 8),
+            TextField(controller: _key, obscureText: true, decoration: const InputDecoration(labelText: 'Gemini API key')),
+            const SizedBox(height: 8),
+            TextField(controller: _model, decoration: const InputDecoration(labelText: 'Model name', hintText: 'gemini-2.5-flash')),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () {
+                s.setGemini(_key.text, _model.text);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Scene description settings saved')));
+              },
+              child: const Text('Save key'),
+            ),
+            const SectionLabel('Testing mode (for evaluation)'),
+            SwitchListTile(
+              value: s.testMode,
+              onChanged: (v) => s.setFlag('testMode', v),
+              title: const Text('Testing mode', style: TextStyle(fontSize: 20)),
+              subtitle: Text('Logs every alert with time and confidence, and shows Correct / Wrong buttons for the tester.', style: TextStyle(color: GabayColors.mute)),
+            ),
+            if (s.testMode) ...[
+              Text(TestLog.I.summary(), style: TextStyle(fontSize: 16, color: GabayColors.ink, height: 1.5)),
+              const SizedBox(height: 8),
+              Row(children: [
+                Expanded(child: FilledButton.icon(onPressed: TestLog.I.share, icon: const Icon(Icons.ios_share), label: const Text('Export log'))),
+                const SizedBox(width: 10),
+                SizedBox(width: 120, child: OutlinedButton(onPressed: () => TestLog.I.clear().then((_) => setState(() {})), child: const Text('Clear'))),
+              ]),
+            ],
             const SectionLabel('Profile'),
             OutlinedButton(
               onPressed: () {
