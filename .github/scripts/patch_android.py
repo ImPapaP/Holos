@@ -97,3 +97,9 @@ p = props.read_text() if props.exists() else ""
 if "kotlin.jvm.target.validation.mode" not in p:
     props.write_text(p.rstrip() + "\nkotlin.jvm.target.validation.mode=warning\n")
     print("gradle.properties: kotlin jvm target validation set to warning")
+
+# 8) TensorFlow Lite's libraries share the 'org.tensorflow.lite' package name; newer AGP rejects that by default
+p = props.read_text()
+if "android.uniquePackageNames" not in p:
+    props.write_text(p.rstrip() + "\nandroid.uniquePackageNames=false\n")
+    print("gradle.properties: uniquePackageNames=false")
