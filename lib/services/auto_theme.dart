@@ -1,6 +1,4 @@
-import 'dart:async';
-
-import 'package:light/light.dart';
+import 'package:flutter/services.dart';
 
 import '../core/app_state.dart';
 
@@ -8,15 +6,17 @@ import '../core/app_state.dart';
 /// Bright surroundings (outdoors in daylight) -> Daylight theme, otherwise Gabay Night.
 /// It only decides at launch so the screen never changes in the middle of a walk.
 class AutoTheme {
-  static const brightLux = 1000; // typical overcast daylight is 1,000+ lux; indoors is usually under 500
+  static const _channel = MethodChannel('gabay/light');
+  static const brightLux = 1000; // overcast daylight is 1,000+ lux; indoor rooms are usually under 500
 
   static Future<void> pick() async {
     if (AppState.I.themeChoice != 'auto') return;
     try {
-      final lux = await Light().lightSensorStream.first.timeout(const Duration(seconds: 2));
+      final lux = await _channel.invokeMethod<double>('read');
+      if (lux == null || lux < 0) return; // no light sensor: keep Gabay Night
       AppState.I.setAutoPick(lux >= brightLux ? 'day' : 'night');
     } catch (_) {
-      // No light sensor or no reading: keep Gabay Night.
+      // Keep Gabay Night if anything goes wrong.
     }
   }
 }

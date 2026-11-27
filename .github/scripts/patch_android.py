@@ -70,3 +70,8 @@ for name in ("build.gradle.kts", "build.gradle"):
     g = re.sub(r"minSdkVersion\s+[\w.]+", "minSdkVersion 24", g)
     gradle.write_text(g)
     print(f"minSdk set to 24 in {name}")
+
+# 5) Native light sensor reader for the Auto theme (replaces the outdated plugin)
+for act in (root / "android/app/src/main").rglob("MainActivity.kt"):
+    act.write_text((root / "android_setup/MainActivity.kt").read_text())
+    print(f"MainActivity written: {act}")
