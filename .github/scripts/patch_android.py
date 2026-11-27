@@ -90,3 +90,10 @@ old = rules.read_text() if rules.exists() else ""
 if "org.tensorflow.lite.gpu" not in old:
     rules.write_text(old + extra)
     print("proguard rules written")
+
+# 7) Older plugins (tflite_flutter) mix Java 1.8 and Kotlin JVM targets: warn instead of failing
+props = root / "android/gradle.properties"
+p = props.read_text() if props.exists() else ""
+if "kotlin.jvm.target.validation.mode" not in p:
+    props.write_text(p.rstrip() + "\nkotlin.jvm.target.validation.mode=warning\n")
+    print("gradle.properties: kotlin jvm target validation set to warning")
