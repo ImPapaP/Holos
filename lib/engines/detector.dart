@@ -111,6 +111,27 @@ Uint8List frameToModelInput(FrameData f) {
 /// Top-level so the background isolate only receives the frame data.
 Future<Uint8List> convertFrameInBackground(FrameData f) => Isolate.run(() => frameToModelInput(f));
 
+/// Turns RGBA pixels (already resized to the model size) into model input.
+Uint8List rgbaToModelInput(Uint8List rgba, int w, int h, bool asFloat) {
+  final n = w * h * 3;
+  if (asFloat) {
+    final out = Float32List(n);
+    for (var i = 0, o = 0; i < w * h; i++, o += 3) {
+      out[o] = rgba[i * 4] / 127.5 - 1;
+      out[o + 1] = rgba[i * 4 + 1] / 127.5 - 1;
+      out[o + 2] = rgba[i * 4 + 2] / 127.5 - 1;
+    }
+    return out.buffer.asUint8List();
+  }
+  final out = Uint8List(n);
+  for (var i = 0, o = 0; i < w * h; i++, o += 3) {
+    out[o] = rgba[i * 4];
+    out[o + 1] = rgba[i * 4 + 1];
+    out[o + 2] = rgba[i * 4 + 2];
+  }
+  return out;
+}
+
 /// EfficientDet-Lite object detector (COCO, 80 everyday objects), running on the phone.
 class Detector {
   Detector._(this.name, {this.optional = false});
@@ -190,6 +211,14 @@ class Detector {
     if (!ready || _iso == null) return const [];
     final sw = Stopwatch()..start();
     final input = await convertFrameInBackground(frame);
+    final out = await detectInput(input);
+    lastMs = sw.elapsedMilliseconds;
+    return out;
+  }
+
+  /// Runs the model on an already-prepared input (inW x inH x 3, uint8 or float bytes).
+  Future<List<Det>> detectInput(Uint8List input) async {
+    if (!ready || _iso == null) return const [];
     final outputs = <int, Object>{
       _boxIdx: [List.generate(_n, (_) => List<double>.filled(4, 0))],
       _classIdx: [List<double>.filled(_n, 0)],
@@ -216,7 +245,6 @@ class Detector {
       if (rect.width <= 0 || rect.height <= 0) continue;
       out.add(Det(label, s, rect));
     }
-    lastMs = sw.elapsedMilliseconds;
     return out;
   }
 }

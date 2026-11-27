@@ -15,6 +15,7 @@ import '../widgets/verdict_bar.dart';
 import '../core/l10n.dart';
 import '../core/app_state.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 /// Sweep: point the phone like a flashlight. It buzzes only when the center of the
 /// camera faces an object; closer = stronger and faster. Your hand position tells the direction.
@@ -121,16 +122,13 @@ class _SweepScreenState extends State<SweepScreen> {
             }),
             SafeArea(
               child: Align(
-                alignment: Alignment.topRight,
+                alignment: Alignment.topCenter,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const LangToggle(onCamera: true),
-                    FilledButton.tonal(
-                      style: FilledButton.styleFrom(minimumSize: const Size(96, 52)),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(L('Exit')),
-                    ),
+                  child: Row(children: const [
+                    BackPill(onCamera: true),
+                    Spacer(),
+                    LangToggle(onCamera: true),
                   ]),
                 ),
               ),

@@ -9,7 +9,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 class FrameCamera extends StatefulWidget {
   final Future<void> Function(CameraImage img, int rotation) onFrame;
   final ResolutionPreset preset;
-  const FrameCamera({super.key, required this.onFrame, this.preset = ResolutionPreset.medium});
+  const FrameCamera({super.key, required this.onFrame, this.preset = ResolutionPreset.high});
 
   @override
   State<FrameCamera> createState() => _FrameCameraState();
@@ -33,6 +33,9 @@ class _FrameCameraState extends State<FrameCamera> {
     final cam = CameraController(back, widget.preset,
         enableAudio: false, imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888);
     await cam.initialize();
+    try {
+      await cam.setFocusMode(FocusMode.auto);
+    } catch (_) {}
     if (!mounted) {
       await cam.dispose();
       return;

@@ -12,6 +12,7 @@ import '../widgets/big_tile.dart';
 import 'practice_screen.dart';
 import '../core/l10n.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -45,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final s = AppState.I;
     return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
-      appBar: AppBar(actions: const [LangToggle()], title: Text(L('Settings'))),
+      appBar: AppBar(leading: const BackPill(), leadingWidth: 132, actions: const [LangToggle()], title: Text(L('Settings'))),
       body: ListenableBuilder(
         listenable: s,
         builder: (context, _) => ListView(
@@ -148,19 +149,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: Text(L('Uses on-device speech recognition when the phone supports it (Android 13+, language pack installed).'), style: TextStyle(color: GabayColors.mute)),
             ),
             SectionLabel(L('Scene description (Ilarawan)')),
-            Text(L('Needs a free Google Gemini API key from aistudio.google.com. Photos you describe are sent to Google.'),
-                style: TextStyle(color: GabayColors.mute, fontSize: 16)),
-            const SizedBox(height: 8),
-            TextField(controller: _key, obscureText: true, decoration: InputDecoration(labelText: L('Gemini API key'))),
-            const SizedBox(height: 8),
-            TextField(controller: _model, decoration: InputDecoration(labelText: L('Model name'), hintText: 'gemini-2.5-flash')),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () {
-                s.setGemini(_key.text, _model.text);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L('Scene description settings saved'))));
-              },
-              child: Text(L('Save key')),
+            Text(L('Ilarawan works offline on your phone. No key or account needed.'), style: TextStyle(color: GabayColors.mute, fontSize: 16)),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: Text(L('Optional: more detail online (advanced)'), style: const TextStyle(fontSize: 18)),
+              children: [
+                Text(L('Adds a "More detail" button that sends the photo to Google Gemini. Needs internet and a free key from aistudio.google.com.'),
+                    style: TextStyle(color: GabayColors.mute, fontSize: 15)),
+                const SizedBox(height: 8),
+                TextField(controller: _key, obscureText: true, decoration: InputDecoration(labelText: L('Gemini API key'))),
+                const SizedBox(height: 8),
+                TextField(controller: _model, decoration: InputDecoration(labelText: L('Model name'), hintText: 'gemini-2.5-flash')),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: () {
+                    s.setGemini(_key.text, _model.text);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L('Scene description settings saved'))));
+                  },
+                  child: Text(L('Save key')),
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
             SectionLabel(L('Testing mode (for evaluation)')),
             SwitchListTile(

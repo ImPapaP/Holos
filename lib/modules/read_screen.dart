@@ -15,6 +15,8 @@ import '../widgets/verdict_bar.dart';
 import '../core/l10n.dart';
 import '../core/app_state.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
+import 'package:flutter/services.dart';
 
 /// Basa (read): take a photo of a sign, label, medicine box or document;
 /// Gabay finds the text (ML Kit, on the phone) and reads it aloud in large print.
@@ -50,8 +52,18 @@ class _ReadScreenState extends State<ReadScreen> {
     final cams = await availableCameras();
     if (cams.isEmpty) return;
     final back = cams.firstWhere((c) => c.lensDirection == CameraLensDirection.back, orElse: () => cams.first);
-    final cam = CameraController(back, ResolutionPreset.high, enableAudio: false);
-    await cam.initialize();
+    // veryHigh (1080p) keeps small print sharp; JPEG avoids devices that fail on other formats.
+    final cam = CameraController(back, ResolutionPreset.veryHigh, enableAudio: false, imageFormatGroup: ImageFormatGroup.jpeg);
+    try {
+      await cam.initialize();
+    } catch (e) {
+      if (mounted) setState(() => _status = L('Camera could not start'));
+      return;
+    }
+    try {
+      await cam.setFocusMode(FocusMode.auto);
+      await cam.setFlashMode(FlashMode.off);
+    } catch (_) {}
     if (!mounted) {
       await cam.dispose();
       return;
@@ -69,8 +81,20 @@ class _ReadScreenState extends State<ReadScreen> {
     });
     Haptics.play(Haptics.start);
     try {
+      // Focus on the middle first so the text is sharp.
+      try {
+        await cam.setFocusPoint(const Offset(0.5, 0.5));
+        await Future.delayed(const Duration(milliseconds: 450));
+      } catch (_) {}
       final shot = await cam.takePicture();
-      final result = await _recognizer.processImage(InputImage.fromFilePath(shot.path));
+      RecognizedText result;
+      try {
+        result = await _recognizer.processImage(InputImage.fromFilePath(shot.path));
+      } on PlatformException {
+        // Some phones reject the camera's file directly: re-save it as a clean JPEG copy and try again.
+        final fixed = await _resave(shot.path);
+        result = await _recognizer.processImage(InputImage.fromFilePath(fixed));
+      }
       final bytes = await File(shot.path).readAsBytes();
       final img = await decodeImageFromList(bytes);
       final text = result.text.trim();
@@ -84,11 +108,38 @@ class _ReadScreenState extends State<ReadScreen> {
       Output.speak(text.isEmpty ? S.t('read_none') : text, force: true);
       TestLog.I.log('Basa', text.isEmpty ? 'no text' : text.replaceAll('\n', ' '), latencyMs: null);
       if (text.isEmpty) Haptics.play(Haptics.clear);
+    } on PlatformException catch (e) {
+      setState(() => _status = '${L('Could not read the text. Hold the phone still and try again.')}\n(${e.code}: ${e.message ?? ''})');
+      Output.speak(L('Could not read the text. Hold the phone still and try again.'), force: true);
+      TestLog.I.log('Basa', 'error ${e.code} ${e.message ?? ''}');
     } catch (e) {
-      setState(() => _status = 'Could not read: $e');
+      setState(() => _status = '${L('Could not read the text. Hold the phone still and try again.')}\n($e)');
+      Output.speak(L('Could not read the text. Hold the phone still and try again.'), force: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Writes a downscaled PNG copy of the photo (max 1600 px) that ML Kit always accepts.
+  Future<String> _resave(String path) async {
+    final bytes = await File(path).readAsBytes();
+    final probe = await decodeImageFromList(bytes);
+    final big = probe.width > probe.height ? probe.width : probe.height;
+    final scale = big > 1600 ? 1600 / big : 1.0;
+    final codec = await ui.instantiateImageCodec(bytes, targetWidth: (probe.width * scale).round(), targetHeight: (probe.height * scale).round());
+    final img = (await codec.getNextFrame()).image;
+    final png = await img.toByteData(format: ui.ImageByteFormat.png);
+    final out = '${File(path).parent.path}/gabay_read_${DateTime.now().millisecondsSinceEpoch}.png';
+    await File(out).writeAsBytes(png!.buffer.asUint8List());
+    return out;
+  }
+
+  Future<void> _focusAt(Offset p) async {
+    try {
+      await _cam?.setFocusPoint(p);
+      await _cam?.setExposurePoint(p);
+      Haptics.play(const [20]);
+    } catch (_) {}
   }
 
   @override
@@ -103,7 +154,7 @@ class _ReadScreenState extends State<ReadScreen> {
   Widget build(BuildContext context) {
     final cam = _cam;
     return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
-      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Basa' : 'Read (Basa)')),
+      appBar: AppBar(leading: const BackPill(), leadingWidth: 132, actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Basa' : 'Read (Basa)')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -120,10 +171,14 @@ class _ReadScreenState extends State<ReadScreen> {
                       ]);
                     })
                   : (cam != null && cam.value.isInitialized
-                      ? FittedBox(
-                          fit: BoxFit.cover,
-                          child: SizedBox(width: cam.value.previewSize!.height, height: cam.value.previewSize!.width, child: CameraPreview(cam)),
-                        )
+                      // Tap the preview to focus on that spot.
+                      ? LayoutBuilder(builder: (context, box) => GestureDetector(
+                            onTapDown: (d) => _focusAt(Offset(d.localPosition.dx / box.maxWidth, d.localPosition.dy / box.maxHeight)),
+                            child: FittedBox(
+                              fit: BoxFit.cover,
+                              child: SizedBox(width: cam.value.previewSize!.height, height: cam.value.previewSize!.width, child: CameraPreview(cam)),
+                            ),
+                          ))
                       : const ColoredBox(color: Colors.black, child: Center(child: CircularProgressIndicator()))),
             ),
           ),

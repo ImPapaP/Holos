@@ -155,7 +155,7 @@ class _TouchScreenState extends State<TouchScreen> {
                     const SizedBox(width: 6),
                     SizedBox(
                       width: 110,
-                      child: OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: Text(L('Exit'))),
+                      child: OutlinedButton.icon(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.arrow_back_rounded), label: Text(L('Back'))),
                     ),
                   ]),
                 ],

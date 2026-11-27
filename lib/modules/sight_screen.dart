@@ -17,6 +17,7 @@ import '../widgets/verdict_bar.dart';
 import 'sos_screen.dart';
 import '../core/l10n.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 /// Lakad (walk): obstacles ahead -> direction + distance -> vibration, voice and visual helpers.
 /// Gestures: tap = pause, double-tap = repeat, hold 1.5 s = SOS.
@@ -239,12 +240,11 @@ class _SightScreenState extends State<SightScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        _pill('${_fps.toStringAsFixed(0)} fps · ${Detector.I.ready ? 'EfficientDet' : 'ML Kit'}', null),
+                        const BackPill(onCamera: true),
+                        if (AppState.I.testMode) ...[const SizedBox(width: 6), _pill('${_fps.toStringAsFixed(0)} fps', null)],
                         const Spacer(),
                         const LangToggle(onCamera: true),
                         _pill(_showBoxes ? L('Boxes on') : L('Boxes off'), () => setState(() => _showBoxes = !_showBoxes)),
-                        const SizedBox(width: 8),
-                        _pill(L('Exit'), () => Navigator.of(context).pop()),
                       ],
                     ),
                   ),

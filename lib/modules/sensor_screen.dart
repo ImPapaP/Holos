@@ -9,6 +9,7 @@ import '../widgets/big_tile.dart';
 import '../core/l10n.dart';
 import '../core/app_state.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 /// Gas, smoke and heat alerts from the Gabay ESP32 sensor over Bluetooth,
 /// for users who cannot smell or feel heat.
@@ -64,7 +65,7 @@ class _SensorScreenState extends State<SensorScreen> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
-      appBar: AppBar(actions: const [LangToggle()], title: Text(L('Sensor Alerts'))),
+      appBar: AppBar(leading: const BackPill(), leadingWidth: 132, actions: const [LangToggle()], title: Text(L('Sensor Alerts'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

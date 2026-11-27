@@ -22,6 +22,7 @@ import '../modules/touch_screen.dart';
 import '../services/voice_commands.dart';
 import '../widgets/big_tile.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 import 'settings_screen.dart';
 
 /// Home: big, simple choices. Simple mode shows only the user's modules as large squares;
@@ -126,7 +127,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final simple = state.simpleHome && !_showAll;
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Gabay'),
+            automaticallyImplyLeading: false,
+            titleSpacing: 12,
+            title: const Row(mainAxisSize: MainAxisSize.min, children: [GabayLogo(size: 46), SizedBox(width: 12), Text('Gabay')]),
             actions: [
               const LangToggle(),
               IconButton(

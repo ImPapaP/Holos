@@ -46,7 +46,7 @@ const Map<Module, ModuleInfo> modules = {
   Module.sweep: ModuleInfo('Sweep', 'Point the phone to scan around you', Icons.radar),
   Module.touch: ModuleInfo('Touch-explore', 'Slide a finger to feel where things are', Icons.touch_app),
   Module.read: ModuleInfo('Basa', 'Read signs, labels and documents aloud', Icons.document_scanner),
-  Module.scene: ModuleInfo('Ilarawan', 'Describe the scene in sentences (online)', Icons.auto_awesome),
+  Module.scene: ModuleInfo('Ilarawan', 'Describe what is in front (offline)', Icons.auto_awesome),
   Module.color: ModuleInfo('Kulay', 'Say colors and how bright it is', Icons.palette),
   Module.peso: ModuleInfo('Pera', 'Identify peso bills by sound and vibration', Icons.payments),
   Module.nav: ModuleInfo('Daan', 'Vibration guidance to a saved place', Icons.explore),

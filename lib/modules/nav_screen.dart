@@ -14,6 +14,7 @@ import '../services/test_log.dart';
 import '../widgets/big_tile.dart';
 import '../core/l10n.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 /// Daan: haptic guidance toward a saved place (straight-line direction, not street routing).
 /// Facing the right way = soft tick; target on the left/right = left/right pattern; arrived = Gabay pulses.
@@ -147,7 +148,7 @@ class _NavScreenState extends State<NavScreen> {
     final diff = (_bearing != null && h != null) ? angleDiff(_bearing!, h) : null;
     final onCourse = diff != null && diff.abs() <= 20;
     return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
-      appBar: AppBar(actions: const [LangToggle()], title: const Text('Daan')),
+      appBar: AppBar(leading: const BackPill(), leadingWidth: 132, actions: const [LangToggle()], title: const Text('Daan')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

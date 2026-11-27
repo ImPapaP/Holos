@@ -66,7 +66,8 @@ class VisionCameraState extends State<VisionCamera> {
       return;
     }
     final back = cams.firstWhere((c) => c.lensDirection == CameraLensDirection.back, orElse: () => cams.first);
-    final cam = CameraController(back, ResolutionPreset.medium,
+    // high (720p) instead of medium (480p): medium looked blurry when stretched to full screen.
+    final cam = CameraController(back, ResolutionPreset.high,
         enableAudio: false, imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888);
     try {
       await cam.initialize();
@@ -74,6 +75,10 @@ class VisionCameraState extends State<VisionCamera> {
       widget.onError?.call('Camera could not start');
       return;
     }
+    try {
+      await cam.setFocusMode(FocusMode.auto);
+      await cam.setExposureMode(ExposureMode.auto);
+    } catch (_) {}
     if (!mounted) {
       await cam.dispose();
       return;

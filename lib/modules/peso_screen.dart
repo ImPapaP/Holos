@@ -15,6 +15,7 @@ import 'camera_frames.dart';
 import '../core/l10n.dart';
 import '../core/app_state.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 /// Pera: identifies Philippine peso bills with a model you train (training/ notebook).
 /// Each bill has its own vibration count so deafblind users can feel the amount.
@@ -70,7 +71,7 @@ class _PesoScreenState extends State<PesoScreen> {
   Widget build(BuildContext context) {
     final ready = ImageClassifier.peso.ready;
     return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
-      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Pera' : 'Peso reader')),
+      appBar: AppBar(leading: const BackPill(), leadingWidth: 132, actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Pera' : 'Peso reader')),
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
           : !ready

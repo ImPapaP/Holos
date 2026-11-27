@@ -10,6 +10,7 @@ import '../services/sound_watcher.dart';
 import '../core/l10n.dart';
 import '../core/app_state.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 /// Noise monitor that warns before overload, plus a haptic breathing guide
 /// (4 s in, 4 s hold, 6 s out).
@@ -135,7 +136,7 @@ class _CalmScreenState extends State<CalmScreen> {
   Widget build(BuildContext context) {
     final state = _db < 55 ? (L('Calm'), GabayColors.ok) : (_db < 70 ? (L('Busy'), GabayColors.accent) : (L('Loud'), GabayColors.danger));
     return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
-      appBar: AppBar(actions: const [LangToggle()], title: Text(L('Calm'))),
+      appBar: AppBar(leading: const BackPill(), leadingWidth: 132, actions: const [LangToggle()], title: Text(L('Calm'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

@@ -86,8 +86,18 @@ extra = """
 -dontwarn com.google.mlkit.vision.text.japanese.**
 -dontwarn com.google.mlkit.vision.text.korean.**
 """
+extra += """
+# Keep ML Kit (text recognition, image labeling, object detection) intact in release builds;
+# R8 stripping these caused a PlatformException in Basa.
+-keep class com.google.mlkit.** { *; }
+-keep class com.google.android.gms.internal.mlkit_vision_** { *; }
+-keep class com.google.android.gms.vision.** { *; }
+-keep class com.google_mlkit_** { *; }
+-keep class com.google.android.odml.** { *; }
+-dontwarn com.google.mlkit.**
+"""
 old = rules.read_text() if rules.exists() else ""
-if "org.tensorflow.lite.gpu" not in old:
+if "com.google_mlkit_" not in old:
     rules.write_text(old + extra)
     print("proguard rules written")
 

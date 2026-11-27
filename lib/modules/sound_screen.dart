@@ -14,6 +14,7 @@ import '../widgets/big_tile.dart';
 import '../widgets/verdict_bar.dart';
 import '../core/l10n.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 
 /// Tunog: recognizes important sounds (YAMNet) and shows them as big icons, screen
 /// flashes and vibration. Live captions turn speech into large text.
@@ -146,7 +147,7 @@ class _SoundScreenState extends State<SoundScreen> {
     final cur = _current;
     final curColor = cur != null && cur.urgent ? GabayColors.danger : GabayColors.accent;
     return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
-      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Tunog' : 'Sound')),
+      appBar: AppBar(leading: const BackPill(), leadingWidth: 132, actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Tunog' : 'Sound')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

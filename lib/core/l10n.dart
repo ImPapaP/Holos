@@ -30,6 +30,7 @@ const Map<String, String> _tl = {
   'Slide a finger to feel where things are': 'Idaan ang daliri para maramdaman kung nasaan ang mga bagay',
   'Read signs, labels and documents aloud': 'Basahin nang malakas ang karatula, label at dokumento',
   'Describe the scene in sentences (online)': 'Ilarawan ang paligid sa mga pangungusap (online)',
+  'Describe what is in front (offline)': 'Ilarawan ang nasa harap (offline)',
   'Say colors and how bright it is': 'Sabihin ang kulay at kung gaano kaliwanag',
   'Identify peso bills by sound and vibration': 'Kilalanin ang perang papel gamit ang tunog at vibration',
   'Vibration guidance to a saved place': 'Gabay sa vibration papunta sa naka-save na lugar',
@@ -250,4 +251,15 @@ const Map<String, String> _tl = {
       'Home. Nasa screen ang mga module mo. Nasa ibaba ang SOS. Nasa kanang itaas ang Settings.',
   'Welcome to Gabay. Choose your profile. Options: blind or low vision, deaf or hard of hearing, deafblind, sensory sensitive, lost smell or touch. The language button is at the top right.':
       'Maligayang pagdating sa Gabay. Piliin ang iyong profile. Pagpipilian: bulag o malabo ang paningin, bingi o mahina ang pandinig, bingi at bulag, sensitibo sa paligid, nawalan ng pang-amoy o pandama. Nasa kanang itaas ang button ng wika.',
+  "Back": "Bumalik",
+  "Camera could not start": "Hindi mabuksan ang camera",
+  "Could not read the text. Hold the phone still and try again.": "Hindi mabasa ang teksto. Huwag galawin ang telepono at subukan ulit.",
+  "Could not take the photo. Try again.": "Hindi nakuhanan ng litrato. Subukan ulit.",
+  "Works offline. Nothing leaves your phone.": "Gumagana kahit walang internet. Walang lumalabas sa telepono mo.",
+  "More detail (online)": "Mas detalyado (online)",
+  "Sends this photo to Google.": "Ipapadala ang litratong ito sa Google.",
+  "Online description is not available right now.": "Hindi available ang online na paglalarawan ngayon.",
+  "Ilarawan works offline on your phone. No key or account needed.": "Gumagana ang Ilarawan kahit walang internet. Hindi kailangan ng key o account.",
+  "Optional: more detail online (advanced)": "Opsyonal: mas detalyado online (advanced)",
+  "Adds a \"More detail\" button that sends the photo to Google Gemini. Needs internet and a free key from aistudio.google.com.": "Magdadagdag ng \"Mas detalyado\" na button na nagpapadala ng litrato sa Google Gemini. Kailangan ng internet at libreng key mula sa aistudio.google.com.",
 };

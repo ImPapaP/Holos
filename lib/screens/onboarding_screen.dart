@@ -7,6 +7,7 @@ import '../core/theme.dart';
 import '../widgets/big_tile.dart';
 import '../core/l10n.dart';
 import '../widgets/lang_toggle.dart';
+import '../widgets/back_pill.dart';
 import '../core/output.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -33,6 +34,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            const Center(child: GabayLogo(size: 120)),
+            const SizedBox(height: 16),
             Row(children: [
               Expanded(
                 child: Text('Gabay', style: TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: GabayColors.accent, height: 1)),
