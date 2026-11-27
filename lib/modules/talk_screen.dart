@@ -43,7 +43,7 @@ class _TalkScreenState extends State<TalkScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Type a message and the phone vibrates it in Morse code, one letter at a time.',
+          Text('Type a message and the phone vibrates it in Morse code, one letter at a time.',
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           TextField(
@@ -81,7 +81,7 @@ class _TalkScreenState extends State<TalkScreen> {
             height: 140,
             child: Center(
               child: Text(_letter,
-                  style: const TextStyle(fontSize: 120, fontWeight: FontWeight.w900, color: GabayColors.accent, height: 1)),
+                  style: TextStyle(fontSize: 120, fontWeight: FontWeight.w900, color: GabayColors.accent, height: 1)),
             ),
           ),
           const SectionLabel('Quick messages'),

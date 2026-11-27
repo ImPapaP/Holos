@@ -66,7 +66,7 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         children: [
-          Text('Profile: ${p.name} (${p.desc})', style: const TextStyle(color: GabayColors.mute, fontSize: 16)),
+          Text('Profile: ${p.name} (${p.desc})', style: TextStyle(color: GabayColors.mute, fontSize: 16)),
           const SizedBox(height: 12),
           SegmentedButton<Lang>(
             segments: const [

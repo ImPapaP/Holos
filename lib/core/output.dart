@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'app_state.dart';
 import 'haptics.dart';
 import 'strings.dart';
+import 'theme.dart';
 
 final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
 
@@ -38,11 +39,11 @@ class Output {
     } catch (_) {}
   }
 
-  static void notify(String text, List<int> pattern, {Color color = const Color(0xFFFF5A4E)}) {
+  static void notify(String text, List<int> pattern, {Color? color}) {
     final o = AppState.I.out;
     if (o.vibration) Haptics.play(pattern);
     if (o.voice) speak(text);
-    if (o.visual) showAlert(text, color);
+    if (o.visual) showAlert(text, color ?? GabayColors.danger);
   }
 
   static void showAlert(String text, Color color) {
@@ -67,6 +68,9 @@ class _AlertOverlay extends StatelessWidget {
   final VoidCallback onClose;
   const _AlertOverlay({required this.text, required this.color, required this.onClose});
 
+  // Dark text on light alert colors (e.g. orange, light red), white otherwise.
+  Color get _fg => color.computeLuminance() > 0.35 ? Colors.black : Colors.white;
+
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
@@ -80,13 +84,13 @@ class _AlertOverlay extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.warning_rounded, size: 140, color: Colors.white),
+                  Icon(Icons.warning_rounded, size: 140, color: _fg),
                   const SizedBox(height: 16),
                   Text(text,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Colors.white, height: 1.1)),
+                      style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: _fg, height: 1.1)),
                   const SizedBox(height: 24),
-                  const Text('Tap to close', style: TextStyle(color: Colors.white70, fontSize: 18)),
+                  Text('Tap to close', style: TextStyle(color: _fg, fontSize: 18)),
                 ],
               ),
             ),

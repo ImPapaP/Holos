@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
+import '../core/haptics.dart';
+import '../core/output.dart';
 import '../core/theme.dart';
 import '../widgets/big_tile.dart';
 import 'practice_screen.dart';
@@ -15,6 +17,12 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController _name = TextEditingController(text: AppState.I.caregiverName);
   late final TextEditingController _phone = TextEditingController(text: AppState.I.caregiverPhone);
+
+  void _pickTheme(BuildContext context, String id, String name) {
+    Haptics.play(Haptics.start);
+    Output.speak('Theme: $name', force: true);
+    AppState.I.setTheme(id);
+  }
 
   @override
   void dispose() {
@@ -54,9 +62,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: s.fallDetection,
               onChanged: s.setFallDetection,
               title: const Text('Fall detection', style: TextStyle(fontSize: 20)),
-              subtitle: const Text('Starts SOS if the phone detects a hard fall while Gabay is open',
+              subtitle: Text('Starts SOS if the phone detects a hard fall while Gabay is open',
                   style: TextStyle(color: GabayColors.mute)),
             ),
+            const SectionLabel('Appearance'),
+            Text('Each theme serves a need. Alerts always use color plus an icon, text and vibration.',
+                style: TextStyle(color: GabayColors.mute, fontSize: 16)),
+            const SizedBox(height: 10),
+            BigTile(
+              title: 'Auto',
+              subtitle: 'Uses the light sensor when Gabay opens: Daylight outdoors, Gabay Night indoors',
+              icon: Icons.brightness_auto,
+              selected: s.themeChoice == 'auto',
+              onTap: () => _pickTheme(context, 'auto', 'Auto'),
+            ),
+            for (final t in GabayThemes.all) ...[
+              const SizedBox(height: 10),
+              BigTile(
+                title: t.name,
+                subtitle: t.purpose,
+                icon: Icons.palette_outlined,
+                selected: s.themeChoice == t.id,
+                onTap: () => _pickTheme(context, t.id, t.name),
+              ),
+            ],
             const SectionLabel('Learn'),
             BigTile(
               title: 'Practice vibration patterns',

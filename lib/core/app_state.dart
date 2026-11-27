@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'profiles.dart';
 import 'strings.dart';
+import 'theme.dart';
 
 /// App-wide settings, saved on the phone.
 class AppState extends ChangeNotifier {
@@ -18,6 +19,14 @@ class AppState extends ChangeNotifier {
   bool fallDetection = false;
   double soundSensitivity = 0; // -15 (less sensitive) .. +15 (more sensitive)
 
+  /// 'auto' or a palette id (night, contrast, day, cb, calm).
+  String themeChoice = 'auto';
+
+  /// Palette Auto mode picked from the light sensor at launch.
+  String autoPick = 'night';
+
+  GabayPalette get palette => GabayThemes.byId(themeChoice == 'auto' ? autoPick : themeChoice);
+
   Outputs get out => profiles[profile ?? Profile.loss]!.out;
 
   Future<void> load() async {
@@ -30,6 +39,21 @@ class AppState extends ChangeNotifier {
     caregiverPhone = _prefs.getString('cgPhone') ?? '';
     fallDetection = _prefs.getBool('fall') ?? false;
     soundSensitivity = _prefs.getDouble('sens') ?? 0;
+    themeChoice = _prefs.getString('theme') ?? 'auto';
+    GabayThemes.current = palette;
+  }
+
+  void setAutoPick(String id) {
+    autoPick = id;
+    GabayThemes.current = palette;
+    notifyListeners();
+  }
+
+  Future<void> setTheme(String choice) async {
+    themeChoice = choice;
+    GabayThemes.current = palette;
+    await _prefs.setString('theme', choice);
+    notifyListeners();
   }
 
   Future<void> setProfile(Profile? p) async {

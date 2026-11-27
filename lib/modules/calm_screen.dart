@@ -121,7 +121,7 @@ class _CalmScreenState extends State<CalmScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Watches the noise around you and warns before it gets overwhelming. Follow the breathing buzz to settle down.',
+          Text('Watches the noise around you and warns before it gets overwhelming. Follow the breathing buzz to settle down.',
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           FilledButton(onPressed: _toggleMonitor, child: Text(_monitoring ? 'Stop noise monitor' : 'Start noise monitor')),
@@ -129,7 +129,7 @@ class _CalmScreenState extends State<CalmScreen> {
           Text(_monitoring ? '${_db.toStringAsFixed(0)} dB' : '--',
               style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900)),
           Text(_monitoring ? 'Noise level (estimate): ${state.$1}' : 'Noise level (estimate)',
-              style: const TextStyle(color: GabayColors.mute)),
+              style: TextStyle(color: GabayColors.mute)),
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(11),
@@ -150,7 +150,7 @@ class _CalmScreenState extends State<CalmScreen> {
                 child: Container(
                   width: 110,
                   height: 110,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       center: Alignment(-0.3, -0.3),
@@ -171,7 +171,7 @@ class _CalmScreenState extends State<CalmScreen> {
             child: Text(_breathing ? 'Stop breathing guide' : 'Start breathing guide'),
           ),
           const SizedBox(height: 8),
-          const Text('Breathe in with the quick buzzes, out with the slow ones.',
+          Text('Breathe in with the quick buzzes, out with the slow ones.',
               textAlign: TextAlign.center, style: TextStyle(color: GabayColors.mute)),
         ],
       ),

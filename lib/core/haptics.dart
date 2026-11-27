@@ -15,6 +15,8 @@ class Haptics {
   static const pause = [300];
   static const clear = [40];
   static const gentle = [150, 200, 150];
+  /// Haptic logo: braille "g" (dots 1-2-4-5) as four short pulses, played when Gabay opens.
+  static const logo = [70, 90, 70, 90, 70, 90, 70];
 
   static bool? _hasVibrator;
 

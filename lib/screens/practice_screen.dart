@@ -17,6 +17,7 @@ class PracticeScreen extends StatelessWidget {
     ('Gas or smoke', 'Three very long buzzes', Haptics.gas),
     ('Hot surface', 'Four quick buzzes', Haptics.hot),
     ('Emergency mode on', 'S-O-S rhythm', Haptics.sos),
+    ('Gabay is open', 'Four quick pulses: braille "g"', Haptics.logo),
   ];
 
   @override

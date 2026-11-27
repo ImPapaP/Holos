@@ -65,7 +65,7 @@ class _SensorScreenState extends State<SensorScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text(
+          Text(
               'For people who cannot smell gas or smoke, or cannot feel heat. Connect the Gabay ESP32 sensor (MQ-2 gas/smoke + temperature) by Bluetooth.',
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),

@@ -130,7 +130,7 @@ class _SoundScreenState extends State<SoundScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Alerts you to loud sounds by vibration and screen flashes. Live captions turn speech into large text.',
+          Text('Alerts you to loud sounds by vibration and screen flashes. Live captions turn speech into large text.',
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           FilledButton(
@@ -139,7 +139,7 @@ class _SoundScreenState extends State<SoundScreen> {
           ),
           const SizedBox(height: 12),
           Text(_alertsOn ? 'Sound level: ${_db.toStringAsFixed(0)} dB (estimate)' : 'Sound level',
-              style: const TextStyle(color: GabayColors.mute)),
+              style: TextStyle(color: GabayColors.mute)),
           const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(11),
@@ -155,7 +155,7 @@ class _SoundScreenState extends State<SoundScreen> {
             listenable: AppState.I,
             builder: (context, _) => Row(
               children: [
-                const Text('Sensitivity', style: TextStyle(color: GabayColors.mute)),
+                Text('Sensitivity', style: TextStyle(color: GabayColors.mute)),
                 Expanded(
                   child: Slider(
                     value: AppState.I.soundSensitivity,
@@ -169,7 +169,7 @@ class _SoundScreenState extends State<SoundScreen> {
               ],
             ),
           ),
-          if (_error.isNotEmpty) Text(_error, style: const TextStyle(color: GabayColors.danger, fontWeight: FontWeight.w700)),
+          if (_error.isNotEmpty) Text(_error, style: TextStyle(color: GabayColors.danger, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: _toggleCaptions,
@@ -186,7 +186,7 @@ class _SoundScreenState extends State<SoundScreen> {
             ),
           ),
           const SectionLabel('Recent alerts'),
-          if (_log.isEmpty) const Text('No alerts yet', style: TextStyle(color: GabayColors.mute)),
+          if (_log.isEmpty) Text('No alerts yet', style: TextStyle(color: GabayColors.mute)),
           for (final (text, at) in _log)
             Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -195,7 +195,7 @@ class _SoundScreenState extends State<SoundScreen> {
               child: Row(
                 children: [
                   Expanded(child: Text(text)),
-                  Text(TimeOfDay.fromDateTime(at).format(context), style: const TextStyle(color: GabayColors.mute)),
+                  Text(TimeOfDay.fromDateTime(at).format(context), style: TextStyle(color: GabayColors.mute)),
                 ],
               ),
             ),
