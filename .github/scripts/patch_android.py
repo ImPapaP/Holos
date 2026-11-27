@@ -75,3 +75,18 @@ for name in ("build.gradle.kts", "build.gradle"):
 for act in (root / "android/app/src/main").rglob("MainActivity.kt"):
     act.write_text((root / "android_setup/MainActivity.kt").read_text())
     print(f"MainActivity written: {act}")
+
+# 6) R8 rules: TensorFlow Lite GPU and ML Kit optional language classes are not bundled
+rules = root / "android/app/proguard-rules.pro"
+extra = """
+-dontwarn org.tensorflow.lite.gpu.**
+-keep class org.tensorflow.lite.** { *; }
+-dontwarn com.google.mlkit.vision.text.chinese.**
+-dontwarn com.google.mlkit.vision.text.devanagari.**
+-dontwarn com.google.mlkit.vision.text.japanese.**
+-dontwarn com.google.mlkit.vision.text.korean.**
+"""
+old = rules.read_text() if rules.exists() else ""
+if "org.tensorflow.lite.gpu" not in old:
+    rules.write_text(old + extra)
+    print("proguard rules written")

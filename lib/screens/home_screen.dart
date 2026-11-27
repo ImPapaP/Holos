@@ -5,11 +5,14 @@ import '../core/profiles.dart';
 import '../core/strings.dart';
 import '../core/theme.dart';
 import '../modules/calm_screen.dart';
+import '../modules/read_screen.dart';
 import '../modules/sensor_screen.dart';
 import '../modules/sight_screen.dart';
 import '../modules/sos_screen.dart';
 import '../modules/sound_screen.dart';
+import '../modules/sweep_screen.dart';
 import '../modules/talk_screen.dart';
+import '../modules/touch_screen.dart';
 import '../widgets/big_tile.dart';
 import 'settings_screen.dart';
 
@@ -23,6 +26,9 @@ class HomeScreen extends StatelessWidget {
     }
     final Widget screen = switch (m) {
       Module.sight => const SightScreen(),
+      Module.sweep => const SweepScreen(),
+      Module.touch => const TouchScreen(),
+      Module.read => const ReadScreen(),
       Module.sound => const SoundScreen(),
       Module.talk => const TalkScreen(),
       Module.calm => const CalmScreen(),

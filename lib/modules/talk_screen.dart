@@ -84,6 +84,20 @@ class _TalkScreenState extends State<TalkScreen> {
                   style: TextStyle(fontSize: 120, fontWeight: FontWeight.w900, color: GabayColors.accent, height: 1)),
             ),
           ),
+          // Visual helper: the current letter's Morse code as dots and dashes.
+          if (morseCode[_letter] != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (final c in morseCode[_letter]!.split(''))
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    width: c == '.' ? 22 : 66,
+                    height: 22,
+                    decoration: BoxDecoration(color: GabayColors.accent, borderRadius: BorderRadius.circular(11)),
+                  ),
+              ],
+            ),
           const SectionLabel('Quick messages'),
           Wrap(
             spacing: 10,

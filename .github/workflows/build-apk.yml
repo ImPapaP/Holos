@@ -34,6 +34,9 @@ jobs:
       - name: Add permissions and set minSdk 24
         run: python3 .github/scripts/patch_android.py
 
+      - name: Download AI models (EfficientDet-Lite and YAMNet)
+        run: bash .github/scripts/get_models.sh
+
       - name: Get packages
         run: flutter pub get
 

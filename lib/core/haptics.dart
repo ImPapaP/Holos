@@ -27,6 +27,13 @@ class Haptics {
     await Vibration.vibrate(pattern: [0, ...onOff]);
   }
 
+  /// One pulse with a strength from 1 (soft) to 255 (strong), on phones that support it.
+  static Future<void> pulse(int ms, int amplitude) async {
+    _hasVibrator ??= (await Vibration.hasVibrator()) ?? false;
+    if (_hasVibrator != true) return;
+    await Vibration.vibrate(duration: ms, amplitude: amplitude.clamp(1, 255));
+  }
+
   static Future<void> cancel() => Vibration.cancel();
 
   static List<int> pulses(int count, int on, int off) {

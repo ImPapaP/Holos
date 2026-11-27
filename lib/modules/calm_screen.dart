@@ -26,6 +26,8 @@ class _CalmScreenState extends State<CalmScreen> {
 
   bool _breathing = false;
   String _phase = 'Ready';
+  int _count = 0;
+  Timer? _countTimer;
   double _scale = 1;
   Duration _anim = const Duration(milliseconds: 600);
   final List<Timer> _timers = [];
@@ -66,6 +68,16 @@ class _CalmScreenState extends State<CalmScreen> {
         _phase = S.t(phase);
         _scale = scale;
         _anim = Duration(milliseconds: ms);
+        _count = ms ~/ 1000;
+      });
+      // Visual helper: seconds left in this breath, shown inside the circle.
+      _countTimer?.cancel();
+      _countTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+        if (!mounted || !_breathing || _count <= 1) {
+          t.cancel();
+          return;
+        }
+        setState(() => _count--);
       });
       if (pattern != null) Haptics.play(pattern);
     }));
@@ -89,6 +101,8 @@ class _CalmScreenState extends State<CalmScreen> {
   }
 
   void _stopBreathing() {
+    _countTimer?.cancel();
+    _count = 0;
     for (final t in _timers) {
       t.cancel();
     }
@@ -104,6 +118,7 @@ class _CalmScreenState extends State<CalmScreen> {
 
   @override
   void dispose() {
+    _countTimer?.cancel();
     _watcher.stop();
     _breathing = false;
     for (final t in _timers) {
@@ -150,20 +165,18 @@ class _CalmScreenState extends State<CalmScreen> {
                 child: Container(
                   width: 110,
                   height: 110,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      center: Alignment(-0.3, -0.3),
-                      colors: [Color(0xFFFFF3B0), GabayColors.accent, Color(0xFFC99A10)],
-                    ),
-                  ),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: GabayColors.accent),
+                  child: _breathing && _count > 0
+                      ? Text('$_count', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: GabayColors.onAccent))
+                      : null,
                 ),
               ),
             ),
           ),
           Semantics(
             liveRegion: true,
-            child: Text(_phase, textAlign: TextAlign.center, style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w800)),
+            child: Text(_phase, textAlign: TextAlign.center, style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: GabayColors.ink)),
           ),
           const SizedBox(height: 16),
           OutlinedButton(

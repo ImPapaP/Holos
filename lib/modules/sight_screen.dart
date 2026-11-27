@@ -1,23 +1,20 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:math';
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_object_detection/google_mlkit_object_detection.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../core/app_state.dart';
 import '../core/haptics.dart';
 import '../core/output.dart';
 import '../core/profiles.dart';
+import '../core/sound_info.dart';
 import '../core/strings.dart';
 import '../core/theme.dart';
+import '../engines/detector.dart';
+import '../engines/vision_camera.dart';
 import '../services/sound_watcher.dart';
 import 'sos_screen.dart';
 
-/// Camera → on-device object detection → direction + distance → vibration.
+/// Lakad (walk): obstacles ahead -> direction + distance -> vibration, voice and visual helpers.
 /// Gestures: tap = pause, double-tap = repeat, hold 1.5 s = SOS.
 class SightScreen extends StatefulWidget {
   const SightScreen({super.key});
@@ -27,188 +24,112 @@ class SightScreen extends StatefulWidget {
 }
 
 class _Target {
-  final String label;
+  final Det det;
   final String dir; // left / center / right
   final int near; // 1 far, 2 close, 3 very close
-  final Rect box;
-  final DateTime at;
-  _Target(this.label, this.dir, this.near, this.box) : at = DateTime.now();
-  String get key => '$label$dir$near';
+  final DateTime at = DateTime.now();
+  _Target(this.det, this.dir, this.near);
+  String get key => '${det.label}$dir$near';
 }
 
+String dirOf(Det d) {
+  final cx = d.box.center.dx;
+  return cx < 0.38 ? 'left' : (cx > 0.62 ? 'right' : 'center');
+}
+
+int nearOf(Det d) => d.closeness > 0.3 ? 3 : (d.closeness > 0.12 ? 2 : 1);
+
+String describeDet(Det? d, {int? near, String? dir}) {
+  if (d == null) return S.t('clear');
+  final n = near ?? nearOf(d);
+  final nearTxt = n == 3 ? ', ${S.t('veryClose')}' : (n == 2 ? ', ${S.t('close')}' : '');
+  final name = S.lang == Lang.fil ? (filLabels[d.label] ?? d.label) : d.label;
+  return '${name[0].toUpperCase()}${name.substring(1)} ${S.t(dir ?? dirOf(d))}$nearTxt';
+}
+
+const filLabels = {
+  'person': 'tao', 'car': 'kotse', 'motorcycle': 'motor', 'bus': 'bus', 'truck': 'trak', 'bicycle': 'bisikleta',
+  'train': 'tren', 'chair': 'upuan', 'bench': 'bangko', 'couch': 'sopa', 'bed': 'kama', 'dining table': 'mesa',
+  'dog': 'aso', 'cat': 'pusa', 'potted plant': 'halaman', 'fire hydrant': 'hydrant', 'stop sign': 'stop sign',
+  'suitcase': 'maleta', 'toilet': 'inidoro', 'tv': 'TV', 'refrigerator': 'ref', 'traffic light': 'traffic light',
+  'bottle': 'bote', 'cup': 'tasa', 'backpack': 'bag', 'umbrella': 'payong', 'cell phone': 'cellphone', 'book': 'libro',
+};
+
 class _SightScreenState extends State<SightScreen> {
-  CameraController? _cam;
-  ObjectDetector? _detector;
   SoundWatcher? _sound;
   Timer? _hapticTimer;
   Timer? _holdTimer;
-
-  bool _busy = false;
   bool _paused = false;
   bool _showBoxes = true;
   String _say = S.t('loading');
-  String _meta = 'Tap: pause · Double-tap: repeat · Hold: SOS';
   _Target? _target;
-  List<DetectedObject> _objects = [];
-  Size _imageSize = Size.zero;
+  List<Det> _dets = [];
+  double _fps = 0;
   String _lastKey = '';
   DateTime _lastSpeak = DateTime.fromMillisecondsSinceEpoch(0);
   DateTime _lastBuzz = DateTime.fromMillisecondsSinceEpoch(0);
-  int _frames = 0;
-  DateTime _fpsAt = DateTime.now();
-  int _fps = 0;
+  String? _soundBanner;
 
   @override
   void initState() {
     super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    final perm = await Permission.camera.request();
-    if (!perm.isGranted) {
-      setState(() => _say = 'Camera permission denied');
-      return;
-    }
-    final cams = await availableCameras();
-    if (cams.isEmpty) {
-      setState(() => _say = 'No camera found');
-      return;
-    }
-    final back = cams.firstWhere((c) => c.lensDirection == CameraLensDirection.back, orElse: () => cams.first);
-    final cam = CameraController(
-      back,
-      ResolutionPreset.medium,
-      enableAudio: false,
-      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888,
-    );
-    await cam.initialize();
-    if (!mounted) {
-      await cam.dispose();
-      return;
-    }
-    _detector = ObjectDetector(
-      options: ObjectDetectorOptions(mode: DetectionMode.stream, classifyObjects: true, multipleObjects: true),
-    );
-    _cam = cam;
-    await cam.startImageStream(_onFrame);
-    WakelockPlus.enable();
     _hapticTimer = Timer.periodic(const Duration(milliseconds: 100), (_) => _hapticTick());
-
-    // Blind and deafblind users also get sound alerts while walking.
     final p = AppState.I.profile;
     if (p == Profile.blind || p == Profile.deafblind) {
-      _sound = SoundWatcher(onAlert: (kind) {
-        if (_paused) return;
+      _sound = SoundWatcher(onEvent: (e) {
+        if (_paused || !e.urgent) return;
         _lastBuzz = DateTime.now().add(const Duration(milliseconds: 1500));
-        Haptics.play(kind == 'continuous' ? Haptics.continuous : Haptics.sudden);
-        Output.speak(S.t(kind));
-        if (mounted) setState(() => _say = S.t(kind));
+        Haptics.play(SoundInfo.pattern(e.category));
+        Output.speak(SoundInfo.text(e.category));
+        if (mounted) setState(() => _soundBanner = e.category);
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) setState(() => _soundBanner = null);
+        });
       });
-      await _sound!.start();
+      _sound!.start();
     }
-
     Haptics.play(Haptics.start);
     Output.speak(S.t('ready'));
-    if (mounted) setState(() => _say = S.t('ready'));
+    _say = S.t('ready');
   }
 
-  InputImage? _toInputImage(CameraImage image) {
-    final cam = _cam;
-    if (cam == null) return null;
-    final rotation = InputImageRotationValue.fromRawValue(cam.description.sensorOrientation);
-    final format = InputImageFormatValue.fromRawValue(image.format.raw);
-    if (rotation == null || format == null || image.planes.length != 1) return null;
-    final plane = image.planes.first;
-    return InputImage.fromBytes(
-      bytes: plane.bytes,
-      metadata: InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: rotation,
-        format: format,
-        bytesPerRow: plane.bytesPerRow,
-      ),
-    );
-  }
-
-  Future<void> _onFrame(CameraImage image) async {
-    if (_busy || _paused || !mounted || _detector == null) return;
-    _busy = true;
-    try {
-      final input = _toInputImage(image);
-      if (input == null) return;
-      final objects = await _detector!.processImage(input);
-      final rot = input.metadata!.rotation;
-      final sideways = rot == InputImageRotation.rotation90deg || rot == InputImageRotation.rotation270deg;
-      final upright = sideways
-          ? Size(image.height.toDouble(), image.width.toDouble())
-          : Size(image.width.toDouble(), image.height.toDouble());
-      _process(objects, upright);
-    } catch (_) {
-      // Skip a bad frame.
-    } finally {
-      _busy = false;
-    }
-  }
-
-  void _process(List<DetectedObject> objects, Size size) {
+  void _onDetections(List<Det> dets, double fps) {
     _Target? best;
-    double bestScore = 0;
-    for (final o in objects) {
-      final b = o.boundingBox;
-      final area = (b.width * b.height) / (size.width * size.height);
-      final tall = pow(b.height / size.height, 2) * 0.6;
-      final closeness = max(area, tall.toDouble()); // bigger on screen = closer
-      if (closeness < 0.05) continue;
-      if (closeness > bestScore) {
-        bestScore = closeness;
-        final cx = b.center.dx / size.width;
-        final dir = cx < 0.38 ? 'left' : (cx > 0.62 ? 'right' : 'center');
-        final near = closeness > 0.3 ? 3 : (closeness > 0.12 ? 2 : 1);
-        final label = o.labels.isNotEmpty ? o.labels.first.text : S.t('object');
-        best = _Target(label, dir, near, b);
+    var bestScore = 0.0;
+    for (final d in dets) {
+      if (d.closeness < 0.04) continue;
+      final pr = d.closeness * (d.isVehicle ? 1.6 : 1);
+      if (pr > bestScore) {
+        bestScore = pr;
+        best = _Target(d, dirOf(d), nearOf(d));
       }
     }
     final now = DateTime.now();
-    _frames++;
-    if (now.difference(_fpsAt).inMilliseconds > 1000) {
-      _fps = _frames;
-      _frames = 0;
-      _fpsAt = now;
-    }
     final key = best?.key ?? 'none';
     if (best != null && key != _lastKey && now.difference(_lastSpeak).inMilliseconds > 2000) {
-      Output.speak(_describe(best));
+      Output.speak(describeDet(best.det, near: best.near, dir: best.dir));
       _lastSpeak = now;
     }
     if (key != 'none' || now.difference(_lastSpeak).inMilliseconds > 2000) _lastKey = key;
-    if (!mounted) return;
     setState(() {
       _target = best;
-      _objects = objects;
-      _imageSize = size;
-      _say = _describe(best);
-      _meta = 'Detector: $_fps fps · Tap: pause · Double-tap: repeat · Hold: SOS';
+      _dets = dets;
+      _fps = fps;
+      _say = describeDet(best?.det, near: best?.near, dir: best?.dir);
     });
   }
 
-  String _describe(_Target? t) {
-    if (t == null) return S.t('clear');
-    final near = t.near == 3 ? ', ${S.t('veryClose')}' : (t.near == 2 ? ', ${S.t('close')}' : '');
-    return '${t.label} ${S.t(t.dir)}$near';
-  }
-
-  // Closer objects buzz more often.
+  // Closer objects buzz more often; vehicles add a danger burst when close.
   void _hapticTick() {
     final t = _target;
     if (_paused || t == null) return;
     final now = DateTime.now();
-    if (now.difference(t.at).inMilliseconds > 800) return;
+    if (now.difference(t.at).inMilliseconds > 900) return;
     const gaps = [0, 2600, 1400, 750];
     if (now.difference(_lastBuzz).inMilliseconds < gaps[t.near]) return;
     _lastBuzz = now;
     final pattern = switch (t.dir) { 'left' => Haptics.left, 'right' => Haptics.right, _ => Haptics.center };
-    Haptics.play(t.near == 3 ? [...Haptics.danger, 250, ...pattern] : pattern);
+    Haptics.play((t.det.isVehicle && t.near >= 2) || t.near == 3 ? [...Haptics.danger, 250, ...pattern] : pattern);
   }
 
   void _togglePause() {
@@ -222,13 +143,13 @@ class _SightScreenState extends State<SightScreen> {
 
   void _repeat() {
     final t = _target;
-    final fresh = t != null && DateTime.now().difference(t.at).inMilliseconds < 800;
-    if (fresh) {
+    if (t != null && DateTime.now().difference(t.at).inMilliseconds < 900) {
       Haptics.play(switch (t.dir) { 'left' => Haptics.left, 'right' => Haptics.right, _ => Haptics.center });
+      Output.speak(describeDet(t.det, near: t.near, dir: t.dir));
     } else {
       Haptics.play(Haptics.clear);
+      Output.speak(S.t('clear'));
     }
-    Output.speak(_describe(fresh ? t : null));
   }
 
   @override
@@ -236,55 +157,84 @@ class _SightScreenState extends State<SightScreen> {
     _hapticTimer?.cancel();
     _holdTimer?.cancel();
     _sound?.stop();
-    final cam = _cam;
-    _cam = null;
-    if (cam != null) {
-      if (cam.value.isStreamingImages) cam.stopImageStream().catchError((_) {});
-      cam.dispose();
-    }
-    _detector?.close();
-    WakelockPlus.disable();
     Haptics.cancel();
     Output.stopSpeech();
     super.dispose();
   }
 
+  // Visual helper: how close the nearest object is in each third of the view.
+  Widget _zoneBar() {
+    Color zoneColor(String zone) {
+      final inZone = _dets.where((d) => dirOf(d) == zone).toList();
+      if (inZone.isEmpty) return Colors.white24;
+      final n = inZone.map(nearOf).reduce((a, b) => a > b ? a : b);
+      final vehicle = inZone.any((d) => d.isVehicle);
+      if (n == 3 || (vehicle && n >= 2)) return GabayColors.danger;
+      return n == 2 ? GabayColors.accent : GabayColors.accent.withAlpha(110);
+    }
+
+    Widget zone(String z, String label) => Expanded(
+          child: Container(
+            height: 54,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(color: zoneColor(z), borderRadius: BorderRadius.circular(12)),
+            alignment: Alignment.center,
+            child: Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
+          ),
+        );
+    return Semantics(
+      excludeSemantics: true,
+      child: Row(children: [
+        zone('left', S.lang == Lang.fil ? 'Kaliwa' : 'Left'),
+        zone('center', S.lang == Lang.fil ? 'Harap' : 'Ahead'),
+        zone('right', S.lang == Lang.fil ? 'Kanan' : 'Right'),
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final cam = _cam;
+    final t = _target;
+    final closeness = t == null ? 0.0 : (t.det.closeness / 0.4).clamp(0.0, 1.0);
+    final arrow = t == null ? Icons.check_circle_outline : switch (t.dir) { 'left' => Icons.arrow_back, 'right' => Icons.arrow_forward, _ => Icons.arrow_upward };
     return Scaffold(
       backgroundColor: Colors.black,
       body: Semantics(
-        label: 'Sight is running. Tap to pause, double tap to repeat, hold for SOS.',
+        label: 'Lakad is running. Tap to pause, double tap to repeat, hold for SOS.',
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: _togglePause,
           onDoubleTap: _repeat,
-          onLongPressStart: (_) =>
-              _holdTimer = Timer(const Duration(milliseconds: 1500), () => SosScreen.trigger(reason: 'Manual SOS')),
+          onLongPressStart: (_) => _holdTimer = Timer(const Duration(milliseconds: 1500), () => SosScreen.trigger(reason: 'Manual SOS')),
           onLongPressEnd: (_) => _holdTimer?.cancel(),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (cam != null && cam.value.isInitialized)
-                FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: cam.value.previewSize!.height,
-                    height: cam.value.previewSize!.width,
-                    child: CameraPreview(cam),
+              VisionCamera(onDetections: _onDetections, paused: _paused, showBoxes: _showBoxes, onError: (e) => setState(() => _say = e)),
+              if (_soundBanner != null)
+                Positioned(
+                  top: 90,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: GabayColors.danger, borderRadius: BorderRadius.circular(16)),
+                    child: Row(children: [
+                      Icon(SoundInfo.icon(_soundBanner!), color: GabayColors.onDanger, size: 36),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(SoundInfo.text(_soundBanner!), style: TextStyle(color: GabayColors.onDanger, fontSize: 22, fontWeight: FontWeight.w800))),
+                    ]),
                   ),
                 ),
-              if (_showBoxes && _imageSize != Size.zero)
-                CustomPaint(painter: _BoxPainter(_objects, _imageSize, _target?.box)),
               SafeArea(
                 child: Align(
-                  alignment: Alignment.topRight,
+                  alignment: Alignment.topCenter,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        _pill('${_fps.toStringAsFixed(0)} fps · ${Detector.I.ready ? 'EfficientDet' : 'ML Kit'}', null),
+                        const Spacer(),
                         _pill(_showBoxes ? 'Boxes on' : 'Boxes off', () => setState(() => _showBoxes = !_showBoxes)),
                         const SizedBox(width: 8),
                         _pill('Exit', () => Navigator.of(context).pop()),
@@ -297,28 +247,40 @@ class _SightScreenState extends State<SightScreen> {
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(20, 48, 20, 28),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Color(0xE0000000)],
-                    ),
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 22),
+                  decoration: BoxDecoration(color: GabayColors.bg, borderRadius: const BorderRadius.vertical(top: Radius.circular(26))),
                   child: SafeArea(
                     top: false,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_say,
-                            style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w800,
-                                height: 1.1,
-                                color: _paused ? GabayColors.mute : Colors.white)),
+                        Row(children: [
+                          Icon(arrow, size: 52, color: t?.det.isVehicle == true ? GabayColors.danger : GabayColors.accent),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Semantics(
+                              liveRegion: true,
+                              child: Text(_say, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, height: 1.1, color: _paused ? GabayColors.mute : GabayColors.ink)),
+                            ),
+                          ),
+                        ]),
+                        const SizedBox(height: 14),
+                        Text(S.lang == Lang.fil ? 'Gaano kalapit' : 'How close', style: TextStyle(color: GabayColors.mute, fontSize: 15)),
                         const SizedBox(height: 6),
-                        Text(_meta, style: const TextStyle(color: Colors.white70, fontSize: 15)),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: LinearProgressIndicator(
+                            value: closeness,
+                            minHeight: 18,
+                            backgroundColor: GabayColors.card,
+                            color: closeness > 0.7 ? GabayColors.danger : GabayColors.accent,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _zoneBar(),
+                        const SizedBox(height: 10),
+                        Text('Tap: pause · Double-tap: repeat · Hold: SOS', style: TextStyle(color: GabayColors.mute, fontSize: 14)),
                       ],
                     ),
                   ),
@@ -331,54 +293,16 @@ class _SightScreenState extends State<SightScreen> {
     );
   }
 
-  Widget _pill(String text, VoidCallback onTap) => Material(
+  Widget _pill(String text, VoidCallback? onTap) => Material(
         color: Colors.black54,
         shape: const StadiumBorder(),
         child: InkWell(
           customBorder: const StadiumBorder(),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 16)),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 15)),
           ),
         ),
       );
-}
-
-/// Draws detection boxes for sighted helpers and panel demos.
-class _BoxPainter extends CustomPainter {
-  final List<DetectedObject> objects;
-  final Size imageSize;
-  final Rect? target;
-  _BoxPainter(this.objects, this.imageSize, this.target);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scale = max(size.width / imageSize.width, size.height / imageSize.height);
-    final dx = (size.width - imageSize.width * scale) / 2;
-    final dy = (size.height - imageSize.height * scale) / 2;
-    for (final o in objects) {
-      final b = o.boundingBox;
-      final r = Rect.fromLTWH(dx + b.left * scale, dy + b.top * scale, b.width * scale, b.height * scale);
-      final isTarget = target == b;
-      canvas.drawRect(
-        r,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4
-          ..color = isTarget ? GabayColors.accent : Colors.white54,
-      );
-      final label = o.labels.isNotEmpty ? o.labels.first.text : 'Object';
-      final tp = TextPainter(
-        text: TextSpan(
-            text: ' $label ',
-            style: TextStyle(color: Colors.black, fontSize: 15, backgroundColor: isTarget ? GabayColors.accent : Colors.white70)),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, Offset(r.left, max(0, r.top - tp.height)));
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _BoxPainter old) => true;
 }

@@ -14,7 +14,6 @@ dependencies:
   vibration: ^3.2.1
   flutter_tts: ^4.0.2
   speech_to_text: ^7.0.0
-  noise_meter: ^5.0.2
   permission_handler: ^11.3.1
   shared_preferences: ^2.3.2
   geolocator: ^13.0.1
@@ -22,6 +21,9 @@ dependencies:
   flutter_blue_plus: ^1.32.12
   sensors_plus: ^6.0.1
   wakelock_plus: ^1.2.8
+  tflite_flutter: ^0.11.0
+  record: '>=5.1.0 <7.0.0'
+  google_mlkit_text_recognition: any
 
 dev_dependencies:
   flutter_test:
@@ -31,6 +33,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/models/
+    - assets/labels/
 
 flutter_launcher_icons:
   android: true

@@ -4,6 +4,8 @@ import '../core/app_state.dart';
 import '../core/haptics.dart';
 import '../core/output.dart';
 import '../core/theme.dart';
+import '../engines/detector.dart';
+import '../engines/sound_classifier.dart';
 import '../widgets/big_tile.dart';
 import 'practice_screen.dart';
 
@@ -93,6 +95,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icons.school,
               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PracticeScreen())),
             ),
+            const SectionLabel('AI engines'),
+            Text('Object detection: ${Detector.I.status}\nSound recognition: ${SoundClassifier.I.status}\nText reading: Google ML Kit (on device)',
+                style: TextStyle(color: GabayColors.mute, fontSize: 16, height: 1.5)),
             const SectionLabel('Profile'),
             OutlinedButton(
               onPressed: () {
