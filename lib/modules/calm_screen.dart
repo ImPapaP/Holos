@@ -7,6 +7,9 @@ import '../core/output.dart';
 import '../core/strings.dart';
 import '../core/theme.dart';
 import '../services/sound_watcher.dart';
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Noise monitor that warns before overload, plus a haptic breathing guide
 /// (4 s in, 4 s hold, 6 s out).
@@ -25,7 +28,7 @@ class _CalmScreenState extends State<CalmScreen> {
   DateTime _lastWarn = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool _breathing = false;
-  String _phase = 'Ready';
+  String _phase = L('Ready');
   int _count = 0;
   Timer? _countTimer;
   double _scale = 1;
@@ -110,7 +113,7 @@ class _CalmScreenState extends State<CalmScreen> {
     Haptics.cancel();
     setState(() {
       _breathing = false;
-      _phase = 'Ready';
+      _phase = L('Ready');
       _scale = 1;
       _anim = const Duration(milliseconds: 600);
     });
@@ -130,20 +133,20 @@ class _CalmScreenState extends State<CalmScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = _db < 55 ? ('Calm', GabayColors.ok) : (_db < 70 ? ('Busy', GabayColors.accent) : ('Loud', GabayColors.danger));
-    return Scaffold(
-      appBar: AppBar(title: const Text('Calm')),
+    final state = _db < 55 ? (L('Calm'), GabayColors.ok) : (_db < 70 ? (L('Busy'), GabayColors.accent) : (L('Loud'), GabayColors.danger));
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(L('Calm'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('Watches the noise around you and warns before it gets overwhelming. Follow the breathing buzz to settle down.',
+          Text(L('Watches the noise around you and warns before it gets overwhelming. Follow the breathing buzz to settle down.'),
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
-          FilledButton(onPressed: _toggleMonitor, child: Text(_monitoring ? 'Stop noise monitor' : 'Start noise monitor')),
+          FilledButton(onPressed: _toggleMonitor, child: Text(_monitoring ? L('Stop noise monitor') : L('Start noise monitor'))),
           const SizedBox(height: 14),
           Text(_monitoring ? '${_db.toStringAsFixed(0)} dB' : '--',
               style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900)),
-          Text(_monitoring ? 'Noise level (estimate): ${state.$1}' : 'Noise level (estimate)',
+          Text(_monitoring ? '${L('Noise level (estimate)')}: ${L(state.$1)}' : L('Noise level (estimate)'),
               style: TextStyle(color: GabayColors.mute)),
           const SizedBox(height: 8),
           ClipRRect(
@@ -181,13 +184,13 @@ class _CalmScreenState extends State<CalmScreen> {
           const SizedBox(height: 16),
           OutlinedButton(
             onPressed: _toggleBreathing,
-            child: Text(_breathing ? 'Stop breathing guide' : 'Start breathing guide'),
+            child: Text(_breathing ? L('Stop breathing guide') : L('Start breathing guide')),
           ),
           const SizedBox(height: 8),
-          Text('Breathe in with the quick buzzes, out with the slow ones.',
+          Text(L('Breathe in with the quick buzzes, out with the slow ones.'),
               textAlign: TextAlign.center, style: TextStyle(color: GabayColors.mute)),
         ],
       ),
-    );
+    ));
   }
 }

@@ -12,6 +12,8 @@ import '../core/theme.dart';
 import '../services/heading.dart';
 import '../services/test_log.dart';
 import '../widgets/big_tile.dart';
+import '../core/l10n.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Daan: haptic guidance toward a saved place (straight-line direction, not street routing).
 /// Facing the right way = soft tick; target on the left/right = left/right pattern; arrived = Gabay pulses.
@@ -46,7 +48,7 @@ class _NavScreenState extends State<NavScreen> {
     var perm = await Geolocator.checkPermission();
     if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
     if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-      setState(() => _status = 'Location permission denied');
+      setState(() => _status = L('Location permission denied'));
       return;
     }
     _pos = Geolocator.getPositionStream(locationSettings: const LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 2)).listen((p) {
@@ -102,11 +104,11 @@ class _NavScreenState extends State<NavScreen> {
     final name = await showDialog<String>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Name this place'),
-        content: TextField(controller: ctrl, autofocus: true, decoration: const InputDecoration(hintText: 'Home, school, terminal')),
+        title: Text(L('Name this place')),
+        content: TextField(controller: ctrl, autofocus: true, decoration: InputDecoration(hintText: L('Home, school, terminal'))),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(c, ctrl.text.trim()), child: const Text('Save')),
+          TextButton(onPressed: () => Navigator.pop(c), child: Text(L('Cancel'))),
+          FilledButton(onPressed: () => Navigator.pop(c, ctrl.text.trim()), child: Text(L('Save'))),
         ],
       ),
     );
@@ -144,12 +146,12 @@ class _NavScreenState extends State<NavScreen> {
     final h = _compass.heading;
     final diff = (_bearing != null && h != null) ? angleDiff(_bearing!, h) : null;
     final onCourse = diff != null && diff.abs() <= 20;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Daan')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: const Text('Daan')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('Guides you toward a saved place using vibration. It points in a straight line, so follow sidewalks and use your cane.',
+          Text(L('Guides you toward a saved place using vibration. It points in a straight line, so follow sidewalks and use your cane.'),
               style: TextStyle(color: GabayColors.mute, fontSize: 16)),
           const SizedBox(height: 16),
           if (_target != null) ...[
@@ -172,35 +174,35 @@ class _NavScreenState extends State<NavScreen> {
               child: Text(
                 _arrived
                     ? (S.lang == Lang.fil ? 'Nandito ka na' : 'You have arrived')
-                    : '${_target!.name} · ${_distance == null ? '…' : '${_distance!.round()} m'}${diff == null ? '' : (onCourse ? ' · straight ahead' : (diff > 0 ? ' · turn right' : ' · turn left'))}',
+                    : '${_target!.name} · ${_distance == null ? '…' : '${_distance!.round()} m'}${diff == null ? '' : (onCourse ? (S.lang == Lang.fil ? ' · diretso' : ' · straight ahead') : (diff > 0 ? (S.lang == Lang.fil ? ' · kumanan' : ' · turn right') : (S.lang == Lang.fil ? ' · kumaliwa' : ' · turn left')))}',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: GabayColors.ink),
               ),
             ),
             if (_here != null && _here!.accuracy > 15)
-              Text('GPS accuracy is about ${_here!.accuracy.round()} m. Move to an open area for better guidance.', style: TextStyle(color: GabayColors.mute, fontSize: 15)),
+              Text(S.lang == Lang.fil ? 'Mga ${_here!.accuracy.round()} m ang katumpakan ng GPS. Pumunta sa maluwag na lugar para mas tumpak.' : 'GPS accuracy is about ${_here!.accuracy.round()} m. Move to an open area for better guidance.', style: TextStyle(color: GabayColors.mute, fontSize: 15)),
             const SizedBox(height: 10),
-            OutlinedButton(onPressed: () => setState(() => _target = null), child: const Text('Stop guiding')),
+            OutlinedButton(onPressed: () => setState(() => _target = null), child: Text(L('Stop guiding'))),
           ],
-          const SectionLabel('Saved places'),
-          if (AppState.I.places.isEmpty) Text('No saved places yet.', style: TextStyle(color: GabayColors.mute)),
+          SectionLabel(L('Saved places')),
+          if (AppState.I.places.isEmpty) Text(L('No saved places yet.'), style: TextStyle(color: GabayColors.mute)),
           for (final p in AppState.I.places) ...[
             BigTile(
               title: p.name,
-              subtitle: _here == null ? 'Tap to be guided here' : '${Geolocator.distanceBetween(_here!.latitude, _here!.longitude, p.lat, p.lon).round()} m away · tap to go',
+              subtitle: _here == null ? L('Tap to be guided here') : S.lang == Lang.fil ? '${Geolocator.distanceBetween(_here!.latitude, _here!.longitude, p.lat, p.lon).round()} m ang layo · pindutin para pumunta' : '${Geolocator.distanceBetween(_here!.latitude, _here!.longitude, p.lat, p.lon).round()} m away · tap to go',
               icon: Icons.place,
               selected: identical(p, _target),
               onTap: () => _go(p),
             ),
             const SizedBox(height: 10),
           ],
-          FilledButton.icon(onPressed: _saveHere, icon: const Icon(Icons.add_location_alt), label: const Text('Save this place')),
+          FilledButton.icon(onPressed: _saveHere, icon: const Icon(Icons.add_location_alt), label: Text(L('Save this place'))),
           if (AppState.I.places.isNotEmpty) ...[
             const SizedBox(height: 10),
-            OutlinedButton(onPressed: () => AppState.I.savePlaces([]).then((_) => setState(() {})), child: const Text('Delete all saved places')),
+            OutlinedButton(onPressed: () => AppState.I.savePlaces([]).then((_) => setState(() {})), child: Text(L('Delete all saved places'))),
           ],
           if (_status.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_status, style: TextStyle(color: GabayColors.danger))),
         ],
       ),
-    );
+    ));
   }
 }

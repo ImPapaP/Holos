@@ -15,6 +15,8 @@ import '../services/sound_watcher.dart';
 import '../services/test_log.dart';
 import '../widgets/verdict_bar.dart';
 import 'sos_screen.dart';
+import '../core/l10n.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Lakad (walk): obstacles ahead -> direction + distance -> vibration, voice and visual helpers.
 /// Gestures: tap = pause, double-tap = repeat, hold 1.5 s = SOS.
@@ -201,15 +203,15 @@ class _SightScreenState extends State<SightScreen> {
     final t = _target;
     final closeness = t == null ? 0.0 : (t.det.closeness / 0.4).clamp(0.0, 1.0);
     final arrow = t == null ? Icons.check_circle_outline : switch (t.dir) { 'left' => Icons.arrow_back, 'right' => Icons.arrow_forward, _ => Icons.arrow_upward };
-    return Scaffold(
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
       backgroundColor: Colors.black,
       body: Semantics(
-        label: 'Lakad is running. Tap to pause, double tap to repeat, hold for SOS.',
+        label: L('Lakad is running. Tap to pause, double tap to repeat, hold for SOS.'),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: _togglePause,
           onDoubleTap: _repeat,
-          onLongPressStart: (_) => _holdTimer = Timer(const Duration(milliseconds: 1500), () => SosScreen.trigger(reason: 'Manual SOS')),
+          onLongPressStart: (_) => _holdTimer = Timer(const Duration(milliseconds: 1500), () => SosScreen.trigger(reason: L('Manual SOS'))),
           onLongPressEnd: (_) => _holdTimer?.cancel(),
           child: Stack(
             fit: StackFit.expand,
@@ -239,9 +241,10 @@ class _SightScreenState extends State<SightScreen> {
                       children: [
                         _pill('${_fps.toStringAsFixed(0)} fps · ${Detector.I.ready ? 'EfficientDet' : 'ML Kit'}', null),
                         const Spacer(),
-                        _pill(_showBoxes ? 'Boxes on' : 'Boxes off', () => setState(() => _showBoxes = !_showBoxes)),
+                        const LangToggle(onCamera: true),
+                        _pill(_showBoxes ? L('Boxes on') : L('Boxes off'), () => setState(() => _showBoxes = !_showBoxes)),
                         const SizedBox(width: 8),
-                        _pill('Exit', () => Navigator.of(context).pop()),
+                        _pill(L('Exit'), () => Navigator.of(context).pop()),
                       ],
                     ),
                   ),
@@ -284,7 +287,7 @@ class _SightScreenState extends State<SightScreen> {
                         const SizedBox(height: 14),
                         _zoneBar(),
                         const SizedBox(height: 10),
-                        Text('Tap: pause · Double-tap: repeat · Hold: SOS', style: TextStyle(color: GabayColors.mute, fontSize: 14)),
+                        Text(L('Tap: pause · Double-tap: repeat · Hold: SOS'), style: TextStyle(color: GabayColors.mute, fontSize: 14)),
                         const VerdictBar(),
                       ],
                     ),
@@ -295,7 +298,7 @@ class _SightScreenState extends State<SightScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _pill(String text, VoidCallback? onTap) => Material(

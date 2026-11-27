@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../core/haptics.dart';
 import '../core/output.dart';
 import '../widgets/big_tile.dart';
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 class PracticeScreen extends StatelessWidget {
   const PracticeScreen({super.key});
@@ -22,12 +25,12 @@ class PracticeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Practice')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(L('Practice'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Tap a pattern to feel it. In Sight, faster repeats mean the object is closer.',
+          Text(L('Tap a pattern to feel it. In Sight, faster repeats mean the object is closer.'),
               style: TextStyle(fontSize: 18)),
           const SizedBox(height: 16),
           for (final (meaning, name, pattern) in _items) ...[
@@ -44,6 +47,6 @@ class PracticeScreen extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ));
   }
 }

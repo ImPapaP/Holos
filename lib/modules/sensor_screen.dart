@@ -6,6 +6,9 @@ import '../core/strings.dart';
 import '../core/theme.dart';
 import '../services/ble_sensor.dart';
 import '../widgets/big_tile.dart';
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Gas, smoke and heat alerts from the Gabay ESP32 sensor over Bluetooth,
 /// for users who cannot smell or feel heat.
@@ -21,7 +24,7 @@ class _SensorScreenState extends State<SensorScreen> {
   static const hotLimit = 50.0; // °C
 
   late final BleSensor _ble = BleSensor(onData: _onData, onStatus: _onStatus);
-  String _status = 'Not connected';
+  String _status = L('Not connected');
   int? _gas;
   double? _temp;
   DateTime _lastAlert = DateTime.fromMillisecondsSinceEpoch(0);
@@ -60,38 +63,38 @@ class _SensorScreenState extends State<SensorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sensor Alerts')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(L('Sensor Alerts'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-              'For people who cannot smell gas or smoke, or cannot feel heat. Connect the Gabay ESP32 sensor (MQ-2 gas/smoke + temperature) by Bluetooth.',
+              L('For people who cannot smell gas or smoke, or cannot feel heat. Connect the Gabay ESP32 sensor (MQ-2 gas/smoke + temperature) by Bluetooth.'),
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: () => _ble.connected ? _ble.disconnect().then((_) => _onStatus('Not connected')) : _ble.connect(),
-            child: Text(_ble.connected ? 'Disconnect sensor' : 'Connect sensor'),
+            onPressed: () => _ble.connected ? _ble.disconnect().then((_) => _onStatus(L('Not connected'))) : _ble.connect(),
+            child: Text(_ble.connected ? L('Disconnect sensor') : L('Connect sensor')),
           ),
           const SizedBox(height: 10),
           Text(_status, style: const TextStyle(fontSize: 18)),
           const SizedBox(height: 14),
           Row(
             children: [
-              Expanded(child: _reading('Gas / smoke', _gas?.toString() ?? '--', (_gas ?? 0) > gasLimit)),
+              Expanded(child: _reading(L('Gas / smoke'), _gas?.toString() ?? '--', (_gas ?? 0) > gasLimit)),
               const SizedBox(width: 10),
-              Expanded(child: _reading('Temperature', _temp == null ? '--' : '${_temp!.toStringAsFixed(1)}°C', (_temp ?? 0) > hotLimit)),
+              Expanded(child: _reading(L('Temperature'), _temp == null ? '--' : '${_temp!.toStringAsFixed(1)}°C', (_temp ?? 0) > hotLimit)),
             ],
           ),
-          const SectionLabel('Test alerts (no sensor needed)'),
-          BigTile(title: 'Test: Gas leak', subtitle: 'LPG detected in the kitchen', icon: Icons.local_fire_department, onTap: () => _alert('gas')),
+          SectionLabel(L('Test alerts (no sensor needed)')),
+          BigTile(title: L('Test: Gas leak'), subtitle: L('LPG detected in the kitchen'), icon: Icons.local_fire_department, onTap: () => _alert('gas')),
           const SizedBox(height: 10),
-          BigTile(title: 'Test: Smoke', subtitle: 'Smoke or burning food', icon: Icons.cloud, onTap: () => _alert('smoke')),
+          BigTile(title: L('Test: Smoke'), subtitle: L('Smoke or burning food'), icon: Icons.cloud, onTap: () => _alert('smoke')),
           const SizedBox(height: 10),
-          BigTile(title: 'Test: Hot surface', subtitle: 'Water or pan above safe temperature', icon: Icons.thermostat, onTap: () => _alert('hot')),
+          BigTile(title: L('Test: Hot surface'), subtitle: L('Water or pan above safe temperature'), icon: Icons.thermostat, onTap: () => _alert('hot')),
         ],
       ),
-    );
+    ));
   }
 
   Widget _reading(String label, String value, bool warn) => Container(

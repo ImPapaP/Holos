@@ -20,13 +20,15 @@ import '../modules/touch_screen.dart';
 import '../widgets/big_tile.dart';
 import 'settings_screen.dart';
 import '../services/voice_commands.dart';
+import '../core/l10n.dart';
+import '../widgets/lang_toggle.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _open(BuildContext context, Module m) {
     if (m == Module.sos) {
-      SosScreen.trigger(reason: 'Manual SOS');
+      SosScreen.trigger(reason: L('Manual SOS'));
       return;
     }
     final Widget screen = switch (m) {
@@ -66,12 +68,12 @@ class HomeScreen extends StatelessWidget {
     final state = AppState.I;
     final p = profiles[state.profile]!;
     final others = Module.values.where((m) => !p.recommended.contains(m)).toList();
-    return Scaffold(
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
       floatingActionButton: SizedBox(
         width: 88,
         height: 88,
         child: FloatingActionButton(
-          tooltip: 'Voice command',
+          tooltip: L('Voice command'),
           backgroundColor: GabayColors.accent,
           foregroundColor: GabayColors.onAccent,
           onPressed: () async {
@@ -84,8 +86,9 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Gabay'),
         actions: [
+          const LangToggle(),
           IconButton(
-            tooltip: 'Settings',
+            tooltip: L('Settings'),
             iconSize: 32,
             icon: const Icon(Icons.settings),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
@@ -95,28 +98,19 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         children: [
-          Text('Profile: ${p.name} (${p.desc})', style: TextStyle(color: GabayColors.mute, fontSize: 16)),
-          const SizedBox(height: 12),
-          SegmentedButton<Lang>(
-            segments: const [
-              ButtonSegment(value: Lang.en, label: Text('English')),
-              ButtonSegment(value: Lang.fil, label: Text('Filipino')),
-            ],
-            selected: {state.lang},
-            onSelectionChanged: (s) => state.setLang(s.first),
-          ),
-          const SectionLabel('Recommended for you'),
+          Text('${L('Profile')}: ${L(p.name)} (${L(p.desc)})', style: TextStyle(color: GabayColors.mute, fontSize: 16)),
+          SectionLabel(L('Recommended for you')),
           for (final m in p.recommended) _tile(context, m),
-          const SectionLabel('Other modules'),
+          SectionLabel(L('Other modules')),
           for (final m in others) _tile(context, m),
           if (state.caregiverPhone.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('Add a caregiver number in Settings so SOS can reach them.',
+              child: Text(L('Add a caregiver number in Settings so SOS can reach them.'),
                   style: TextStyle(color: GabayColors.accent, fontSize: 16)),
             ),
         ],
       ),
-    );
+    ));
   }
 }

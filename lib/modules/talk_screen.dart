@@ -6,6 +6,9 @@ import '../core/haptics.dart';
 import '../core/output.dart';
 import '../core/theme.dart';
 import '../widgets/big_tile.dart';
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// A family member types a message; the phone vibrates it in Morse code
 /// so a deafblind user can feel it.
@@ -72,12 +75,12 @@ class _TalkScreenState extends State<TalkScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Touch Talk')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(L('Touch Talk'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('Type a message and the phone vibrates it in Morse code, one letter at a time.',
+          Text(L('Type a message and the phone vibrates it in Morse code, one letter at a time.'),
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           TextField(
@@ -85,18 +88,18 @@ class _TalkScreenState extends State<TalkScreen> {
             minLines: 2,
             maxLines: 4,
             style: const TextStyle(fontSize: 20),
-            decoration: const InputDecoration(hintText: 'Type a message'),
+            decoration: InputDecoration(hintText: L('Type a message')),
           ),
           const SizedBox(height: 12),
           SegmentedButton<int>(
-            segments: [for (final e in _speeds.entries) ButtonSegment(value: e.value, label: Text(e.key))],
+            segments: [for (final e in _speeds.entries) ButtonSegment(value: e.value, label: Text(L(e.key)))],
             selected: {_unit},
             onSelectionChanged: (s) => setState(() => _unit = s.first),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: FilledButton(onPressed: () => _send(_text.text), child: const Text('Send as vibration'))),
+              Expanded(child: FilledButton(onPressed: () => _send(_text.text), child: Text(L('Send as vibration')))),
               const SizedBox(width: 10),
               SizedBox(
                 width: 110,
@@ -105,7 +108,7 @@ class _TalkScreenState extends State<TalkScreen> {
                     _player.stop();
                     setState(() => _letter = '');
                   },
-                  child: const Text('Stop'),
+                  child: Text(L('Stop')),
                 ),
               ),
             ],
@@ -132,12 +135,12 @@ class _TalkScreenState extends State<TalkScreen> {
                   ),
               ],
             ),
-          const SectionLabel('Tap Reply (for the deafblind user)'),
-          Text('Tap for a dot, hold for a dash. Pause to finish a letter. Your family reads or hears the reply.',
+          SectionLabel(L('Tap Reply (for the deafblind user)')),
+          Text(L('Tap for a dot, hold for a dash. Pause to finish a letter. Your family reads or hears the reply.'),
               style: TextStyle(color: GabayColors.mute, fontSize: 16)),
           const SizedBox(height: 10),
           Semantics(
-            label: 'Morse tap pad. Tap for dot, hold for dash.',
+            label: L('Morse tap pad. Tap for dot, hold for dash.'),
             button: true,
             child: Listener(
               onPointerDown: (_) => _tapDown(),
@@ -157,15 +160,15 @@ class _TalkScreenState extends State<TalkScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: GabayColors.card, borderRadius: BorderRadius.circular(18), border: Border.all(color: GabayColors.line, width: 2)),
-            child: Semantics(liveRegion: true, child: Text(_reply.isEmpty ? 'Reply appears here' : _reply, style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: GabayColors.ink))),
+            child: Semantics(liveRegion: true, child: Text(_reply.isEmpty ? L('Reply appears here') : _reply, style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, color: GabayColors.ink))),
           ),
           const SizedBox(height: 10),
           Row(children: [
-            Expanded(child: FilledButton.icon(onPressed: _reply.trim().isEmpty ? null : () => Output.speak(_reply, force: true), icon: const Icon(Icons.volume_up), label: const Text('Speak reply'))),
+            Expanded(child: FilledButton.icon(onPressed: _reply.trim().isEmpty ? null : () => Output.speak(_reply, force: true), icon: const Icon(Icons.volume_up), label: Text(L('Speak reply')))),
             const SizedBox(width: 10),
-            SizedBox(width: 120, child: OutlinedButton(onPressed: () => setState(() { _reply = ''; _code = ''; }), child: const Text('Clear'))),
+            SizedBox(width: 120, child: OutlinedButton(onPressed: () => setState(() { _reply = ''; _code = ''; }), child: Text(L('Clear')))),
           ]),
-          const SectionLabel('Quick messages'),
+          SectionLabel(L('Quick messages')),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -185,3 +188,4 @@ class _TalkScreenState extends State<TalkScreen> {
     );
   }
 }
+)

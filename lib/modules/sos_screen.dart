@@ -8,6 +8,7 @@ import '../core/app_state.dart';
 import '../core/haptics.dart';
 import '../core/output.dart';
 import '../core/theme.dart';
+import '../core/l10n.dart';
 
 /// Emergency screen. Vibrates SOS, gets the GPS location and opens an SMS
 /// to the caregiver with a Google Maps link (the user presses Send).
@@ -63,17 +64,17 @@ class _SosScreenState extends State<SosScreen> {
       var perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
       if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        setState(() => _status = 'Location permission denied');
+        setState(() => _status = L('Location permission denied'));
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 15)));
       setState(() {
         _mapLink = 'https://maps.google.com/?q=${pos.latitude},${pos.longitude}';
-        _status = 'Location ready';
+        _status = L('Location ready');
       });
     } catch (_) {
-      setState(() => _status = 'Could not get location');
+      setState(() => _status = L('Could not get location'));
     }
   }
 
@@ -85,17 +86,17 @@ class _SosScreenState extends State<SosScreen> {
   Future<void> _sendSms() async {
     final phone = AppState.I.caregiverPhone;
     if (phone.isEmpty) {
-      setState(() => _status = 'No caregiver number. Add one in Settings.');
+      setState(() => _status = L('No caregiver number. Add one in Settings.'));
       return;
     }
     final uri = Uri(scheme: 'sms', path: phone, queryParameters: {'body': _message});
-    if (!await launchUrl(uri)) setState(() => _status = 'Could not open SMS app');
+    if (!await launchUrl(uri)) setState(() => _status = L('Could not open SMS app'));
   }
 
   Future<void> _call() async {
     final phone = AppState.I.caregiverPhone;
     if (phone.isEmpty) {
-      setState(() => _status = 'No caregiver number. Add one in Settings.');
+      setState(() => _status = L('No caregiver number. Add one in Settings.'));
       return;
     }
     await launchUrl(Uri(scheme: 'tel', path: phone));
@@ -118,7 +119,7 @@ class _SosScreenState extends State<SosScreen> {
   @override
   Widget build(BuildContext context) {
     final counting = widget.countdown && _left > 0 && (_tick?.isActive ?? false);
-    return Scaffold(
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
       backgroundColor: GabayColors.danger,
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -150,30 +151,30 @@ class _SosScreenState extends State<SosScreen> {
                     _sendSms();
                   },
                   icon: const Icon(Icons.sms),
-                  label: const Text('Text caregiver now'),
+                  label: Text(L('Text caregiver now')),
                 ),
                 const SizedBox(height: 12),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black),
                   onPressed: _call,
                   icon: const Icon(Icons.call),
-                  label: const Text('Call caregiver'),
+                  label: Text(L('Call caregiver')),
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white, side: const BorderSide(color: Colors.white, width: 2)),
                   onPressed: _cancel,
-                  child: const Text("Cancel, I'm OK"),
+                  child: Text(L("Cancel, I'm OK")),
                 ),
                 const SizedBox(height: 8),
-                const Text('Or hold anywhere for 1.5 seconds to cancel',
+                Text(L('Or hold anywhere for 1.5 seconds to cancel'),
                     textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 16)),
               ],
             ),
           ),
         ),
       ),
-    );
+    ));
   }
 }

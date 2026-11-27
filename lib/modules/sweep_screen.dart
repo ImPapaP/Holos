@@ -12,6 +12,9 @@ import 'sight_screen.dart' show describeDet, nearOf;
 import 'sos_screen.dart';
 import '../services/test_log.dart';
 import '../widgets/verdict_bar.dart';
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Sweep: point the phone like a flashlight. It buzzes only when the center of the
 /// camera faces an object; closer = stronger and faster. Your hand position tells the direction.
@@ -85,11 +88,11 @@ class _SweepScreenState extends State<SweepScreen> {
     final h = _hit;
     final c = h == null ? 0.0 : (h.closeness / 0.4).clamp(0.0, 1.0);
     final beamColor = h == null ? Colors.white54 : (h.isHazard || c > 0.7 ? GabayColors.danger : GabayColors.accent);
-    return Scaffold(
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onLongPressStart: (_) => _holdTimer = Timer(const Duration(milliseconds: 1500), () => SosScreen.trigger(reason: 'Manual SOS')),
+        onLongPressStart: (_) => _holdTimer = Timer(const Duration(milliseconds: 1500), () => SosScreen.trigger(reason: L('Manual SOS'))),
         onLongPressEnd: (_) => _holdTimer?.cancel(),
         child: Stack(
           fit: StackFit.expand,
@@ -121,11 +124,14 @@ class _SweepScreenState extends State<SweepScreen> {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: FilledButton.tonal(
-                    style: FilledButton.styleFrom(minimumSize: const Size(96, 52)),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Exit'),
-                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    const LangToggle(onCamera: true),
+                    FilledButton.tonal(
+                      style: FilledButton.styleFrom(minimumSize: const Size(96, 52)),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(L('Exit')),
+                    ),
+                  ]),
                 ),
               ),
             ),
@@ -165,6 +171,6 @@ class _SweepScreenState extends State<SweepScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import '../core/haptics.dart';
 import '../services/test_log.dart';
+import '../core/l10n.dart';
 
 /// Shown only in testing mode: lets a sighted tester mark the last alert correct or wrong.
 class VerdictBar extends StatelessWidget {
@@ -28,8 +29,8 @@ class VerdictBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Row(children: [
-        btn('Correct', Icons.check, const Color(0xFF1E7A46), true),
-        btn('Wrong', Icons.close, const Color(0xFFB3261E), false),
+        btn(L('Correct'), Icons.check, const Color(0xFF1E7A46), true),
+        btn(L('Wrong'), Icons.close, const Color(0xFFB3261E), false),
       ]),
     );
   }

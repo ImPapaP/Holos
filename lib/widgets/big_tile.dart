@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/l10n.dart';
 import '../core/theme.dart';
 
 /// Large, screen-reader friendly button used across the app.
@@ -27,7 +28,7 @@ class BigTile extends StatelessWidget {
     final border = danger ? GabayColors.danger : (selected ? GabayColors.accent : GabayColors.line);
     return Semantics(
       button: true,
-      label: '$title. $subtitle',
+      label: '${L(title)}. ${L(subtitle)}',
       excludeSemantics: true,
       child: Material(
         color: bg,
@@ -53,13 +54,13 @@ class BigTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(title,
+                        Text(L(title),
                             style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
                                 color: danger ? GabayColors.onDanger : GabayColors.ink)),
                         const SizedBox(height: 2),
-                        Text(subtitle,
+                        Text(L(subtitle),
                             style: TextStyle(fontSize: 16, color: danger ? GabayColors.onDanger : GabayColors.mute)),
                       ],
                     ),
@@ -81,6 +82,6 @@ class SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(top: 18, bottom: 8),
-        child: Text(text, style: TextStyle(fontSize: 18, color: GabayColors.mute, fontWeight: FontWeight.w600)),
+        child: Text(L(text), style: TextStyle(fontSize: 18, color: GabayColors.mute, fontWeight: FontWeight.w600)),
       );
 }

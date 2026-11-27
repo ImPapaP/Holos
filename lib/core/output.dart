@@ -7,6 +7,7 @@ import 'app_state.dart';
 import 'haptics.dart';
 import 'strings.dart';
 import 'theme.dart';
+import 'l10n.dart';
 
 final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
 
@@ -90,7 +91,7 @@ class _AlertOverlay extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: _fg, height: 1.1)),
                   const SizedBox(height: 24),
-                  Text('Tap to close', style: TextStyle(color: _fg, fontSize: 18)),
+                  Text(L('Tap to close'), style: TextStyle(color: _fg, fontSize: 18)),
                 ],
               ),
             ),

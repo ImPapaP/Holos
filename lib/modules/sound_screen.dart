@@ -12,6 +12,8 @@ import '../services/sound_watcher.dart';
 import '../services/test_log.dart';
 import '../widgets/big_tile.dart';
 import '../widgets/verdict_bar.dart';
+import '../core/l10n.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Tunog: recognizes important sounds (YAMNet) and shows them as big icons, screen
 /// flashes and vibration. Live captions turn speech into large text.
@@ -73,7 +75,7 @@ class _SoundScreenState extends State<SoundScreen> {
     final ok = await _watcher.start();
     setState(() {
       _alertsOn = ok;
-      _error = ok ? '' : 'Microphone permission denied';
+      _error = ok ? '' : L('Microphone permission denied');
     });
     if (ok) WakelockPlus.enable();
   }
@@ -92,7 +94,7 @@ class _SoundScreenState extends State<SoundScreen> {
       onError: (_) {},
     );
     if (!ok) {
-      setState(() => _error = 'Speech recognition is not available on this phone');
+      setState(() => _error = L('Speech recognition is not available on this phone'));
       return;
     }
     setState(() {
@@ -143,15 +145,15 @@ class _SoundScreenState extends State<SoundScreen> {
     final fresh = _current != null && DateTime.now().difference(_currentAt).inSeconds < 6;
     final cur = _current;
     final curColor = cur != null && cur.urgent ? GabayColors.danger : GabayColors.accent;
-    return Scaffold(
-      appBar: AppBar(title: Text(S.lang == Lang.fil ? 'Tunog' : 'Sound')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Tunog' : 'Sound')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(SoundClassifier.I.ready ? 'Recognizes horns, sirens, alarms, doorbells, knocking, babies crying, dogs and more.' : 'Alerts you to loud sounds by vibration and screen flashes.',
+          Text(SoundClassifier.I.ready ? L('Recognizes horns, sirens, alarms, doorbells, knocking, babies crying, dogs and more.') : L('Alerts you to loud sounds by vibration and screen flashes.'),
               style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
-          FilledButton(onPressed: _toggleAlerts, child: Text(_alertsOn ? 'Stop sound alerts' : 'Start sound alerts')),
+          FilledButton(onPressed: _toggleAlerts, child: Text(_alertsOn ? L('Stop sound alerts') : L('Start sound alerts'))),
           const SizedBox(height: 16),
 
           // Visual helper: the last recognized sound as a big icon card.
@@ -176,7 +178,7 @@ class _SoundScreenState extends State<SoundScreen> {
                       style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: fresh ? (cur!.urgent ? GabayColors.onDanger : GabayColors.onAccent) : GabayColors.ink),
                     ),
                     if (fresh && cur!.category != 'loud')
-                      Text('${(cur!.score * 100).round()}% sure', style: TextStyle(fontSize: 16, color: cur!.urgent ? GabayColors.onDanger : GabayColors.onAccent)),
+                      Text(S.lang == Lang.fil ? '${(cur!.score * 100).round()}% sigurado' : '${(cur!.score * 100).round()}% sure', style: TextStyle(fontSize: 16, color: cur!.urgent ? GabayColors.onDanger : GabayColors.onAccent)),
                   ]),
                 ),
               ),
@@ -195,7 +197,7 @@ class _SoundScreenState extends State<SoundScreen> {
               ]),
             ),
           const SizedBox(height: 12),
-          Text(_alertsOn ? 'Sound level: ${_db.toStringAsFixed(0)} dB (estimate)' : 'Sound level', style: TextStyle(color: GabayColors.mute)),
+          Text(_alertsOn ? '${L('Sound level')}: ${_db.toStringAsFixed(0)} dB' : L('Sound level'), style: TextStyle(color: GabayColors.mute)),
           const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(11),
@@ -204,7 +206,7 @@ class _SoundScreenState extends State<SoundScreen> {
           ListenableBuilder(
             listenable: AppState.I,
             builder: (context, _) => Row(children: [
-              Text('Sensitivity', style: TextStyle(color: GabayColors.mute)),
+              Text(L('Sensitivity'), style: TextStyle(color: GabayColors.mute)),
               Expanded(
                 child: Slider(
                   value: AppState.I.soundSensitivity,
@@ -219,8 +221,8 @@ class _SoundScreenState extends State<SoundScreen> {
           ),
           if (_error.isNotEmpty) Text(_error, style: TextStyle(color: GabayColors.danger, fontWeight: FontWeight.w700)),
 
-          const SectionLabel('Live captions'),
-          OutlinedButton(onPressed: _toggleCaptions, child: Text(_captionsOn ? 'Stop live captions' : 'Start live captions')),
+          SectionLabel(L('Live captions')),
+          OutlinedButton(onPressed: _toggleCaptions, child: Text(_captionsOn ? L('Stop live captions') : L('Start live captions'))),
           const SizedBox(height: 10),
           Row(children: [
             Icon(Icons.text_decrease, color: GabayColors.mute),
@@ -241,8 +243,8 @@ class _SoundScreenState extends State<SoundScreen> {
             ),
           ),
 
-          const SectionLabel('Recent sounds'),
-          if (_log.isEmpty) Text('No sounds yet', style: TextStyle(color: GabayColors.mute)),
+          SectionLabel(L('Recent sounds')),
+          if (_log.isEmpty) Text(L('No sounds yet'), style: TextStyle(color: GabayColors.mute)),
           for (final (e, at) in _log)
             Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -257,6 +259,6 @@ class _SoundScreenState extends State<SoundScreen> {
             ),
         ],
       ),
-    );
+    ));
   }
 }

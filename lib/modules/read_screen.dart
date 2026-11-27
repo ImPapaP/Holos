@@ -12,6 +12,9 @@ import '../core/strings.dart';
 import '../core/theme.dart';
 import '../services/test_log.dart';
 import '../widgets/verdict_bar.dart';
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Basa (read): take a photo of a sign, label, medicine box or document;
 /// Gabay finds the text (ML Kit, on the phone) and reads it aloud in large print.
@@ -41,7 +44,7 @@ class _ReadScreenState extends State<ReadScreen> {
 
   Future<void> _init() async {
     if (!(await Permission.camera.request()).isGranted) {
-      setState(() => _status = 'Camera permission denied');
+      setState(() => _status = L('Camera permission denied'));
       return;
     }
     final cams = await availableCameras();
@@ -99,8 +102,8 @@ class _ReadScreenState extends State<ReadScreen> {
   @override
   Widget build(BuildContext context) {
     final cam = _cam;
-    return Scaffold(
-      appBar: AppBar(title: Text(S.lang == Lang.fil ? 'Basa' : 'Read (Basa)')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Basa' : 'Read (Basa)')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -173,18 +176,18 @@ class _ReadScreenState extends State<ReadScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () => Output.speak(_text!, force: true),
                   icon: const Icon(Icons.volume_up),
-                  label: Text(S.lang == Lang.fil ? 'Basahin ulit' : 'Read again'),
+                  label: Text(S.lang == Lang.fil ? 'Basahin ulit' : L('Read again')),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: OutlinedButton.icon(onPressed: Output.stopSpeech, icon: const Icon(Icons.stop), label: const Text('Stop')),
+                child: OutlinedButton.icon(onPressed: Output.stopSpeech, icon: const Icon(Icons.stop), label: Text(L('Stop'))),
               ),
             ]),
           ],
         ],
       ),
-    );
+    ));
   }
 }
 

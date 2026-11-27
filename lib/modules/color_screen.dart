@@ -10,6 +10,8 @@ import '../core/theme.dart';
 import '../services/test_log.dart';
 import '../widgets/verdict_bar.dart';
 import 'camera_frames.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Kulay: says the color at the center of the camera and how bright the room is.
 class ColorScreen extends StatefulWidget {
@@ -118,8 +120,8 @@ class _ColorScreenState extends State<ColorScreen> {
   @override
   Widget build(BuildContext context) {
     final onColor = _color.computeLuminance() > 0.45 ? Colors.black : Colors.white;
-    return Scaffold(
-      appBar: AppBar(title: Text(S.lang == Lang.fil ? 'Kulay at Liwanag' : 'Color and Light')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Kulay at Liwanag' : 'Color and Light')),
       body: Column(
         children: [
           Expanded(
@@ -168,7 +170,7 @@ class _ColorScreenState extends State<ColorScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

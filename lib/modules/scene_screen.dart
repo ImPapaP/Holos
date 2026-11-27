@@ -13,6 +13,8 @@ import '../core/strings.dart';
 import '../core/theme.dart';
 import '../services/test_log.dart';
 import '../widgets/verdict_bar.dart';
+import '../core/l10n.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Ilarawan: describes the whole scene in sentences using an online vision AI (Google Gemini).
 /// Needs internet and a free API key in Settings. The photo is sent to Google.
@@ -52,7 +54,7 @@ class _SceneScreenState extends State<SceneScreen> {
   Future<void> _describe() async {
     final key = AppState.I.geminiKey;
     if (key.isEmpty) {
-      setState(() => _text = 'Add a Gemini API key in Settings → Scene description to use this module.');
+      setState(() => _text = L('Add a Gemini API key in Settings → Scene description to use this module.'));
       Output.speak(_text, force: true);
       return;
     }
@@ -95,7 +97,7 @@ class _SceneScreenState extends State<SceneScreen> {
       Output.speak(text, force: true);
       TestLog.I.log('Ilarawan', text, latencyMs: sw.elapsedMilliseconds);
     } catch (e) {
-      setState(() => _text = 'Could not describe the scene. Check your internet connection.');
+      setState(() => _text = L('Could not describe the scene. Check your internet connection.'));
       Output.speak(_text, force: true);
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -112,8 +114,8 @@ class _SceneScreenState extends State<SceneScreen> {
   @override
   Widget build(BuildContext context) {
     final cam = _cam;
-    return Scaffold(
-      appBar: AppBar(title: Text(S.lang == Lang.fil ? 'Ilarawan' : 'Describe scene')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Ilarawan' : 'Describe scene')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         AspectRatio(
           aspectRatio: 3 / 4,
@@ -131,7 +133,7 @@ class _SceneScreenState extends State<SceneScreen> {
           label: Text(S.lang == Lang.fil ? 'Ilarawan ang paligid' : 'Describe what\'s in front'),
         ),
         const SizedBox(height: 8),
-        Text('Needs internet. The photo is sent to Google to be described.', style: TextStyle(color: GabayColors.mute, fontSize: 14)),
+        Text(L('Needs internet. The photo is sent to Google to be described.'), style: TextStyle(color: GabayColors.mute, fontSize: 14)),
         if (_text.isNotEmpty) ...[
           Row(children: [
             Icon(Icons.text_decrease, color: GabayColors.mute),
@@ -144,10 +146,10 @@ class _SceneScreenState extends State<SceneScreen> {
             child: Semantics(liveRegion: true, child: Text(_text, style: TextStyle(fontSize: _size, height: 1.35, color: GabayColors.ink, fontWeight: FontWeight.w600))),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(onPressed: () => Output.speak(_text, force: true), icon: const Icon(Icons.volume_up), label: const Text('Read again')),
+          OutlinedButton.icon(onPressed: () => Output.speak(_text, force: true), icon: const Icon(Icons.volume_up), label: Text(L('Read again'))),
           const VerdictBar(),
         ],
       ]),
-    );
+    ));
   }
 }

@@ -12,6 +12,9 @@ import '../engines/detector.dart';
 import '../services/test_log.dart';
 import '../widgets/verdict_bar.dart';
 import 'camera_frames.dart';
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Pera: identifies Philippine peso bills with a model you train (training/ notebook).
 /// Each bill has its own vibration count so deafblind users can feel the amount.
@@ -66,18 +69,18 @@ class _PesoScreenState extends State<PesoScreen> {
   @override
   Widget build(BuildContext context) {
     final ready = ImageClassifier.peso.ready;
-    return Scaffold(
-      appBar: AppBar(title: Text(S.lang == Lang.fil ? 'Pera' : 'Peso reader')),
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
+      appBar: AppBar(actions: const [LangToggle()], title: Text(S.lang == Lang.fil ? 'Pera' : 'Peso reader')),
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
           : !ready
               ? ListView(padding: const EdgeInsets.all(20), children: [
                   Icon(Icons.payments, size: 80, color: GabayColors.accent),
                   const SizedBox(height: 12),
-                  Text('Peso model not installed yet', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: GabayColors.ink)),
+                  Text(L('Peso model not installed yet'), style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: GabayColors.ink)),
                   const SizedBox(height: 10),
                   Text(
-                      'Train it with the notebook in the training/ folder of the GitHub repo: take about 100 photos of each bill (front and back, different lighting), train on Google Colab, then add peso.tflite and peso_labels.txt to assets/. The next build includes it automatically.',
+                      L('Train it with the notebook in the training/ folder of the GitHub repo: take about 100 photos of each bill (front and back, different lighting), train on Google Colab, then add peso.tflite and peso_labels.txt to assets/. The next build includes it automatically.'),
                       style: TextStyle(fontSize: 18, color: GabayColors.mute, height: 1.4)),
                 ])
               : Column(children: [
@@ -102,12 +105,12 @@ class _PesoScreenState extends State<PesoScreen> {
                         const SizedBox(height: 8),
                         LinearProgressIndicator(value: _score, minHeight: 10, backgroundColor: GabayColors.card, color: GabayColors.accent),
                         const SizedBox(height: 6),
-                        Text('20 = 1 buzz · 50 = 2 · 100 = 3 · 200 = 4 · 500 = 5 · 1000 = 6', style: TextStyle(color: GabayColors.mute, fontSize: 14)),
+                        Text(L('20 = 1 buzz · 50 = 2 · 100 = 3 · 200 = 4 · 500 = 5 · 1000 = 6'), style: TextStyle(color: GabayColors.mute, fontSize: 14)),
                         const VerdictBar(),
                       ]),
                     ),
                   ),
                 ]),
-    );
+    ));
   }
 }

@@ -7,10 +7,13 @@ import '../core/theme.dart';
 import '../engines/detector.dart';
 import '../engines/vision_camera.dart';
 import 'sight_screen.dart' show describeDet;
+import '../core/l10n.dart';
+import '../core/app_state.dart';
+import '../widgets/lang_toggle.dart';
 
 /// Touch-explore: slide a finger across the screen to feel where objects are.
 /// Entering an object gives its own vibration and says its name; staying on it ticks
-/// softly, stronger when the object is closer. "Hold scene" freezes the view to explore it.
+/// softly, stronger when the object is closer. L("Hold scene") freezes the view to explore it.
 class TouchScreen extends StatefulWidget {
   const TouchScreen({super.key});
 
@@ -70,7 +73,7 @@ class _TouchScreenState extends State<TouchScreen> {
   @override
   Widget build(BuildContext context) {
     final aspect = _camKey.currentState?.imageAspect ?? 3 / 4;
-    return Scaffold(
+    return ListenableBuilder(listenable: AppState.I, builder: (context, _) => Scaffold(
       backgroundColor: Colors.black,
       body: Column(
         children: [
@@ -142,15 +145,17 @@ class _TouchScreenState extends State<TouchScreen> {
                         onPressed: () {
                           setState(() => _frozen = !_frozen);
                           Haptics.play(Haptics.pause);
-                          Output.speak(_frozen ? (S.lang == Lang.fil ? 'Naka-hold' : 'Scene held') : (S.lang == Lang.fil ? 'Live' : 'Live view'));
+                          Output.speak(_frozen ? (S.lang == Lang.fil ? 'Naka-hold' : 'Scene held') : (S.lang == Lang.fil ? 'Live' : L('Live view')));
                         },
-                        child: Text(_frozen ? 'Live view' : 'Hold scene'),
+                        child: Text(_frozen ? L('Live view') : L('Hold scene')),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 6),
+                    const LangToggle(),
+                    const SizedBox(width: 6),
                     SizedBox(
                       width: 110,
-                      child: OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Exit')),
+                      child: OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: Text(L('Exit'))),
                     ),
                   ]),
                 ],
@@ -159,6 +164,6 @@ class _TouchScreenState extends State<TouchScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
