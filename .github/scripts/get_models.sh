@@ -27,3 +27,29 @@ else
 fi
 echo "YAMNet labels: $(wc -l < assets/labels/yamnet_labels.txt) lines"; head -3 assets/labels/yamnet_labels.txt
 ls -la assets/models assets/labels
+
+# Atkinson Hyperlegible: typeface designed by the Braille Institute for low-vision readers (OFL license).
+mkdir -p assets/fonts
+ok=1
+for w in Regular Bold; do
+  curl -fsSL -o "assets/fonts/AtkinsonHyperlegible-$w.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-$w.ttf" || ok=0
+done
+if [ "$ok" = "1" ]; then
+  python3 - <<'PY'
+import pathlib
+p = pathlib.Path('pubspec.yaml'); s = p.read_text()
+if 'family: Atkinson' not in s:
+    s = s.replace('  uses-material-design: true\n', '''  uses-material-design: true
+  fonts:
+    - family: Atkinson
+      fonts:
+        - asset: assets/fonts/AtkinsonHyperlegible-Regular.ttf
+        - asset: assets/fonts/AtkinsonHyperlegible-Bold.ttf
+          weight: 700
+''')
+    p.write_text(s)
+print('Atkinson Hyperlegible font added')
+PY
+else
+  echo "Font download failed; using the system font"
+fi

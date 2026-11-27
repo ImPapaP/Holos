@@ -43,10 +43,16 @@ class GabayApp extends StatelessWidget {
           navigatorKey: navKey,
           theme: gabayTheme(p),
           // Calm theme: turn off animations across the app.
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(disableAnimations: p.still || MediaQuery.of(context).disableAnimations),
-            child: child!,
-          ),
+          // Calm theme turns off animations; the text-size setting scales all text
+          // (on top of the phone's own font size, capped so layouts stay usable).
+          builder: (context, child) {
+            final mq = MediaQuery.of(context);
+            final scale = (mq.textScaler.scale(1) * AppState.I.textScale).clamp(1.0, 2.2);
+            return MediaQuery(
+              data: mq.copyWith(disableAnimations: p.still || mq.disableAnimations, textScaler: TextScaler.linear(scale)),
+              child: child!,
+            );
+          },
           home: AppState.I.profile == null ? const OnboardingScreen() : const HomeScreen(),
         );
       },

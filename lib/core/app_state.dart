@@ -22,6 +22,9 @@ class AppState extends ChangeNotifier {
   double soundSensitivity = 0; // -15 (less sensitive) .. +15 (more sensitive)
 
   bool testMode = false;
+  double textScale = 1.15; // 1.0 normal, 1.15 large, 1.35 larger, 1.6 largest
+  bool simpleHome = true;
+  bool speakTaps = false;
   bool speedBoost = false;
   bool offlineCaptions = false;
   String geminiKey = '';
@@ -50,6 +53,9 @@ class AppState extends ChangeNotifier {
     soundSensitivity = _prefs.getDouble('sens') ?? 0;
     themeChoice = _prefs.getString('theme') ?? 'auto';
     testMode = _prefs.getBool('testMode') ?? false;
+    textScale = _prefs.getDouble('textScale') ?? 1.15;
+    simpleHome = _prefs.getBool('simpleHome') ?? true;
+    speakTaps = _prefs.getBool('speakTaps') ?? (profile == Profile.blind);
     speedBoost = _prefs.getBool('speedBoost') ?? false;
     offlineCaptions = _prefs.getBool('offlineCaptions') ?? false;
     geminiKey = _prefs.getString('geminiKey') ?? '';
@@ -120,8 +126,18 @@ class AppState extends ChangeNotifier {
         speedBoost = v;
       case 'offlineCaptions':
         offlineCaptions = v;
+      case 'simpleHome':
+        simpleHome = v;
+      case 'speakTaps':
+        speakTaps = v;
     }
     await _prefs.setBool(key, v);
+    notifyListeners();
+  }
+
+  Future<void> setTextScale(double v) async {
+    textScale = v;
+    await _prefs.setDouble('textScale', v);
     notifyListeners();
   }
 

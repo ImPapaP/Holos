@@ -228,4 +228,26 @@ const Map<String, String> _tl = {
       'I-train ito gamit ang notebook sa training/ folder ng GitHub repo: kumuha ng mga 100 larawan ng bawat perang papel (harap at likod, iba-ibang liwanag), i-train sa Google Colab, saka idagdag ang peso.tflite at peso_labels.txt sa assets/. Kasama na ito sa susunod na build.',
   '20 = 1 buzz · 50 = 2 · 100 = 3 · 200 = 4 · 500 = 5 · 1000 = 6': '20 = 1 buzz · 50 = 2 · 100 = 3 · 200 = 4 · 500 = 5 · 1000 = 6',
   'Camera permission denied': 'Hindi pinayagan ang camera',
+
+  // Display, home and onboarding (PWD-friendly UI)
+  'Display and feedback': 'Display at feedback',
+  'Text size': 'Laki ng teksto',
+  'Large': 'Malaki',
+  'Larger': 'Mas malaki',
+  'Largest': 'Pinakamalaki',
+  'Text size changed': 'Napalitan ang laki ng teksto',
+  'Sample text: Gabay guides you through touch and sound.': 'Halimbawa: Ginagabayan ka ng Gabay sa pamamagitan ng pandama at tunog.',
+  'Simple home screen': 'Simpleng home screen',
+  'Shows only your modules as big buttons. The rest are under "More modules".':
+      'Ipinapakita lang ang mga module mo bilang malalaking button. Nasa "Iba pang module" ang iba.',
+  'Speak buttons when tapped': 'Sabihin ang button kapag pinindot',
+  'Says the name of each button you press. Helpful for low vision if you do not use TalkBack.':
+      'Sinasabi ang pangalan ng bawat button na pinindot. Makakatulong sa malabo ang paningin kung hindi gumagamit ng TalkBack.',
+  'More modules': 'Iba pang module',
+  'Show fewer': 'Ipakita ang kaunti',
+  'SOS help': 'SOS tulong',
+  'Home. Your modules are on screen. SOS is at the bottom. Settings is at the top right.':
+      'Home. Nasa screen ang mga module mo. Nasa ibaba ang SOS. Nasa kanang itaas ang Settings.',
+  'Welcome to Gabay. Choose your profile. Options: blind or low vision, deaf or hard of hearing, deafblind, sensory sensitive, lost smell or touch. The language button is at the top right.':
+      'Maligayang pagdating sa Gabay. Piliin ang iyong profile. Pagpipilian: bulag o malabo ang paningin, bingi o mahina ang pandinig, bingi at bulag, sensitibo sa paligid, nawalan ng pang-amoy o pandama. Nasa kanang itaas ang button ng wika.',
 };

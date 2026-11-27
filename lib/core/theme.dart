@@ -147,7 +147,10 @@ class GabayColors {
 
 /// Theme with large text and big touch targets, built from a palette.
 ThemeData gabayTheme(GabayPalette p) {
-  final base = p.dark ? ThemeData.dark(useMaterial3: true) : ThemeData.light(useMaterial3: true);
+  final base = (p.dark ? ThemeData.dark(useMaterial3: true) : ThemeData.light(useMaterial3: true)).copyWith(
+    // Atkinson Hyperlegible: made for low-vision readers (falls back to the system font if missing).
+    textTheme: (p.dark ? ThemeData.dark(useMaterial3: true) : ThemeData.light(useMaterial3: true)).textTheme.apply(fontFamily: 'Atkinson'),
+  );
   final scheme = p.dark
       ? ColorScheme.dark(primary: p.accent, onPrimary: p.onAccent, secondary: p.accent, surface: p.card, onSurface: p.ink, error: p.danger)
       : ColorScheme.light(primary: p.accent, onPrimary: p.onAccent, secondary: p.accent, surface: p.card, onSurface: p.ink, error: p.danger);
@@ -158,15 +161,46 @@ ThemeData gabayTheme(GabayPalette p) {
       backgroundColor: p.bg,
       foregroundColor: p.ink,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: p.accent),
+      toolbarHeight: 72,
+      iconTheme: IconThemeData(size: 32, color: p.ink),
+      titleTextStyle: TextStyle(fontFamily: 'Atkinson', fontSize: 26, fontWeight: FontWeight.w800, color: p.accent),
     ),
-    textTheme: base.textTheme.apply(bodyColor: p.ink, displayColor: p.ink, fontSizeFactor: 1.15),
+    // Big, easy-to-grab controls everywhere.
+    materialTapTargetSize: MaterialTapTargetSize.padded,
+    visualDensity: VisualDensity.comfortable,
+    iconTheme: IconThemeData(size: 30, color: p.ink),
+    focusColor: p.accent.withAlpha(90),
+    sliderTheme: SliderThemeData(
+      trackHeight: 10,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 16),
+      overlayShape: const RoundSliderOverlayShape(overlayRadius: 30),
+      activeTrackColor: p.accent,
+      inactiveTrackColor: p.line,
+      thumbColor: p.accent,
+      valueIndicatorTextStyle: TextStyle(fontSize: 20, color: p.onAccent),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.onAccent : p.mute),
+      trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.accent : p.card),
+      trackOutlineColor: WidgetStateProperty.all(p.line),
+    ),
+    listTileTheme: ListTileThemeData(minVerticalPadding: 14, textColor: p.ink, iconColor: p.ink),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(minimumSize: const Size(64, 56), textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+    ),
+    snackBarTheme: SnackBarThemeData(contentTextStyle: TextStyle(fontSize: 18, color: p.onAccent), backgroundColor: p.accent),
+    dialogTheme: DialogThemeData(
+      backgroundColor: p.card,
+      titleTextStyle: TextStyle(fontFamily: 'Atkinson', fontSize: 26, fontWeight: FontWeight.w800, color: p.ink),
+      contentTextStyle: TextStyle(fontFamily: 'Atkinson', fontSize: 20, color: p.ink),
+    ),
+    textTheme: base.textTheme.apply(bodyColor: p.ink, displayColor: p.ink, fontSizeFactor: 1.15, fontFamily: 'Atkinson'),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size.fromHeight(72),
         backgroundColor: p.accent,
         foregroundColor: p.onAccent,
-        textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+        textStyle: const TextStyle(fontFamily: 'Atkinson', fontSize: 22, fontWeight: FontWeight.w800),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
@@ -175,7 +209,7 @@ ThemeData gabayTheme(GabayPalette p) {
         minimumSize: const Size.fromHeight(64),
         foregroundColor: p.ink,
         side: BorderSide(color: p.line, width: 2),
-        textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(fontFamily: 'Atkinson', fontSize: 20, fontWeight: FontWeight.w700),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
@@ -183,6 +217,10 @@ ThemeData gabayTheme(GabayPalette p) {
       filled: true,
       fillColor: p.card,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: p.line, width: 2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: p.accent, width: 3)),
+      labelStyle: TextStyle(fontSize: 20, color: p.mute),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
     ),
   );
 }

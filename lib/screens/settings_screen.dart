@@ -51,6 +51,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context, _) => ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            SectionLabel(L('Display and feedback')),
+            Text(L('Text size'), style: TextStyle(fontSize: 18, color: GabayColors.ink, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            SegmentedButton<double>(
+              showSelectedIcon: false,
+              segments: [
+                for (final (v, label, size) in const [(1.0, 'Normal', 18.0), (1.15, 'Large', 21.0), (1.35, 'Larger', 24.0), (1.6, 'Largest', 27.0)])
+                  ButtonSegment(value: v, label: Text('A', style: TextStyle(fontSize: size, fontWeight: FontWeight.w900)), tooltip: L(label)),
+              ],
+              selected: {s.textScale},
+              onSelectionChanged: (v) {
+                s.setTextScale(v.first);
+                Output.speak(L('Text size changed'), force: true);
+              },
+            ),
+            const SizedBox(height: 6),
+            Text(L('Sample text: Gabay guides you through touch and sound.'), style: TextStyle(fontSize: 18, color: GabayColors.mute)),
+            SwitchListTile(
+              value: s.simpleHome,
+              onChanged: (v) => s.setFlag('simpleHome', v),
+              title: Text(L('Simple home screen'), style: const TextStyle(fontSize: 20)),
+              subtitle: Text(L('Shows only your modules as big buttons. The rest are under "More modules".'), style: TextStyle(color: GabayColors.mute)),
+            ),
+            SwitchListTile(
+              value: s.speakTaps,
+              onChanged: (v) => s.setFlag('speakTaps', v),
+              title: Text(L('Speak buttons when tapped'), style: const TextStyle(fontSize: 20)),
+              subtitle: Text(L('Says the name of each button you press. Helpful for low vision if you do not use TalkBack.'), style: TextStyle(color: GabayColors.mute)),
+            ),
             SectionLabel(L('Caregiver (for SOS)')),
             TextField(controller: _name, decoration: InputDecoration(labelText: L('Caregiver name'))),
             const SizedBox(height: 10),
