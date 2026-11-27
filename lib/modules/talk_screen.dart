@@ -185,7 +185,6 @@ class _TalkScreenState extends State<TalkScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
-)
