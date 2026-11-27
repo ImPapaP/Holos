@@ -23,8 +23,8 @@ class BigTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = danger ? HolosColors.danger : (selected ? const Color(0xFF2A2610) : HolosColors.card);
-    final border = danger ? HolosColors.danger : (selected ? HolosColors.accent : HolosColors.line);
+    final bg = danger ? GabayColors.danger : (selected ? const Color(0xFF2A2610) : GabayColors.card);
+    final border = danger ? GabayColors.danger : (selected ? GabayColors.accent : GabayColors.line);
     return Semantics(
       button: true,
       label: '$title. $subtitle',
@@ -45,7 +45,7 @@ class BigTile extends StatelessWidget {
               child: Row(
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 36, color: danger ? Colors.white : HolosColors.accent),
+                    Icon(icon, size: 36, color: danger ? Colors.white : GabayColors.accent),
                     const SizedBox(width: 16),
                   ],
                   Expanded(
@@ -57,10 +57,10 @@ class BigTile extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
-                                color: danger ? Colors.white : HolosColors.ink)),
+                                color: danger ? Colors.white : GabayColors.ink)),
                         const SizedBox(height: 2),
                         Text(subtitle,
-                            style: TextStyle(fontSize: 16, color: danger ? Colors.white70 : HolosColors.mute)),
+                            style: TextStyle(fontSize: 16, color: danger ? Colors.white70 : GabayColors.mute)),
                       ],
                     ),
                   ),
@@ -81,6 +81,6 @@ class SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(top: 18, bottom: 8),
-        child: Text(text, style: const TextStyle(fontSize: 18, color: HolosColors.mute, fontWeight: FontWeight.w600)),
+        child: Text(text, style: const TextStyle(fontSize: 18, color: GabayColors.mute, fontWeight: FontWeight.w600)),
       );
 }

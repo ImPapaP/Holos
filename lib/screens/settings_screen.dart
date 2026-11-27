@@ -54,8 +54,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: s.fallDetection,
               onChanged: s.setFallDetection,
               title: const Text('Fall detection', style: TextStyle(fontSize: 20)),
-              subtitle: const Text('Starts SOS if the phone detects a hard fall while Holos is open',
-                  style: TextStyle(color: HolosColors.mute)),
+              subtitle: const Text('Starts SOS if the phone detects a hard fall while Gabay is open',
+                  style: TextStyle(color: GabayColors.mute)),
             ),
             const SectionLabel('Learn'),
             BigTile(

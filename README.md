@@ -1,8 +1,8 @@
-# Holos
+# Gabay
 
-**A Universal Sensory Substitution Mobile Application for Persons with Sensory Disabilities Using Computer Vision, Sound Classification, IoT Sensors, and Haptic Feedback**
+**A Sensory Substitution Mobile Application for Visually Impaired, Deaf, and Deafblind Users Integrating Real-Time Computer Vision, Deep Learning-Based Sound Classification, and Spatial Haptic Feedback**
 
-Holos turns information from a sense the user has lost into a sense they still have. It detects obstacles, sounds, gas leaks and heat, then alerts the user through voice, full-screen visual alerts or vibration, depending on their profile.
+Gabay turns information from a sense the user has lost into a sense they still have. It detects obstacles, sounds, gas leaks and heat, then alerts the user through voice, full-screen visual alerts or vibration, depending on their profile.
 
 ## Profiles
 
@@ -20,7 +20,7 @@ Holos turns information from a sense the user has lost into a sense they still h
 - **Sound**: microphone level monitoring for sudden and continuous loud sounds (alarms, sirens), plus live captions (speech-to-text, English/Filipino).
 - **Touch Talk**: a family member types a message; it is vibrated in Morse code letter by letter.
 - **Calm**: noise monitor that warns before overload, plus a haptic breathing guide (4 s in, 4 s hold, 6 s out).
-- **Sensor Alerts**: connects to the Holos ESP32 sensor (MQ-2 gas/smoke + LM35 temperature) over Bluetooth LE. Test buttons work without hardware.
+- **Sensor Alerts**: connects to the Gabay ESP32 sensor (MQ-2 gas/smoke + LM35 temperature) over Bluetooth LE. Test buttons work without hardware.
 - **SOS**: vibrates SOS, gets GPS location, and opens an SMS to the caregiver with a Google Maps link, or calls them. Fall detection (optional) starts SOS with a 10-second countdown.
 - **Practice**: learn every vibration pattern.
 
@@ -34,7 +34,7 @@ lib/
   modules/                  Sight, Sound, Touch Talk, Calm, Sensor, SOS
   services/                 Sound watcher, fall detector, BLE sensor
   widgets/                  Shared big-tile buttons
-esp32/holos_sensor/         Arduino sketch for the ESP32 sensor
+esp32/gabay_sensor/         Arduino sketch for the ESP32 sensor
 android_setup/              Android permissions to paste into the manifest
 ```
 
@@ -44,9 +44,9 @@ Requirements: Flutter 3.24 or newer, Android Studio, an Android phone (Android 7
 
 1. Create the Android/iOS shell, then copy this repo's files over it:
    ```bash
-   flutter create --org ph.edu.bulsu --project-name holos holos
+   flutter create --org ph.edu.bulsu --project-name gabay gabay
    ```
-   Copy `lib/`, `pubspec.yaml`, `esp32/`, `android_setup/` and this README into the new `holos/` folder (replace `lib/` and `pubspec.yaml`).
+   Copy `lib/`, `pubspec.yaml`, `esp32/`, `android_setup/` and this README into the new `gabay/` folder (replace `lib/` and `pubspec.yaml`).
    *If this repo already contains the `android/` folder, skip this step.*
 2. Open `android/app/src/main/AndroidManifest.xml` and paste the lines from `android_setup/AndroidManifest_permissions.xml` above the `<application>` tag.
 3. Open `android/app/build.gradle` (or `build.gradle.kts`) and set:

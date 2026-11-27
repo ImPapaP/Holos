@@ -53,7 +53,7 @@ class HomeScreen extends StatelessWidget {
     final others = Module.values.where((m) => !p.recommended.contains(m)).toList();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Holos'),
+        title: const Text('Gabay'),
         actions: [
           IconButton(
             tooltip: 'Settings',
@@ -66,7 +66,7 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         children: [
-          Text('Profile: ${p.name} (${p.desc})', style: const TextStyle(color: HolosColors.mute, fontSize: 16)),
+          Text('Profile: ${p.name} (${p.desc})', style: const TextStyle(color: GabayColors.mute, fontSize: 16)),
           const SizedBox(height: 12),
           SegmentedButton<Lang>(
             segments: const [
@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text('Add a caregiver number in Settings so SOS can reach them.',
-                  style: TextStyle(color: HolosColors.accent, fontSize: 16)),
+                  style: TextStyle(color: GabayColors.accent, fontSize: 16)),
             ),
         ],
       ),

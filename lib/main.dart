@@ -15,19 +15,19 @@ Future<void> main() async {
   await Output.init();
   FallDetector.I.sync();
   AppState.I.addListener(FallDetector.I.sync);
-  runApp(const HolosApp());
+  runApp(const GabayApp());
 }
 
-class HolosApp extends StatelessWidget {
-  const HolosApp({super.key});
+class GabayApp extends StatelessWidget {
+  const GabayApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Holos',
+      title: 'Gabay',
       debugShowCheckedModeBanner: false,
       navigatorKey: navKey,
-      theme: holosTheme(),
+      theme: gabayTheme(),
       home: ListenableBuilder(
         listenable: AppState.I,
         builder: (context, _) =>

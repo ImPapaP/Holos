@@ -7,7 +7,7 @@ import '../core/theme.dart';
 import '../services/ble_sensor.dart';
 import '../widgets/big_tile.dart';
 
-/// Gas, smoke and heat alerts from the Holos ESP32 sensor over Bluetooth,
+/// Gas, smoke and heat alerts from the Gabay ESP32 sensor over Bluetooth,
 /// for users who cannot smell or feel heat.
 class SensorScreen extends StatefulWidget {
   const SensorScreen({super.key});
@@ -49,7 +49,7 @@ class _SensorScreenState extends State<SensorScreen> {
 
   void _alert(String kind) {
     Output.notify(S.t(kind), kind == 'hot' ? Haptics.hot : Haptics.gas,
-        color: kind == 'hot' ? const Color(0xFFE07B00) : HolosColors.danger);
+        color: kind == 'hot' ? const Color(0xFFE07B00) : GabayColors.danger);
   }
 
   @override
@@ -66,8 +66,8 @@ class _SensorScreenState extends State<SensorScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           const Text(
-              'For people who cannot smell gas or smoke, or cannot feel heat. Connect the Holos ESP32 sensor (MQ-2 gas/smoke + temperature) by Bluetooth.',
-              style: TextStyle(color: HolosColors.mute, fontSize: 17)),
+              'For people who cannot smell gas or smoke, or cannot feel heat. Connect the Gabay ESP32 sensor (MQ-2 gas/smoke + temperature) by Bluetooth.',
+              style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () => _ble.connected ? _ble.disconnect().then((_) => _onStatus('Not connected')) : _ble.connect(),
@@ -97,13 +97,13 @@ class _SensorScreenState extends State<SensorScreen> {
   Widget _reading(String label, String value, bool warn) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: warn ? HolosColors.danger : HolosColors.card,
+          color: warn ? GabayColors.danger : GabayColors.card,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: warn ? Colors.white70 : HolosColors.mute)),
+            Text(label, style: TextStyle(color: warn ? Colors.white70 : GabayColors.mute)),
             Text(value, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
           ],
         ),

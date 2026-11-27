@@ -1,4 +1,4 @@
-"""Adds Holos permissions to the Android manifest and sets minSdk to 24.
+"""Adds Gabay permissions to the Android manifest and sets minSdk to 24.
 Safe to run more than once."""
 import pathlib
 import re
@@ -17,12 +17,12 @@ if "android.permission.CAMERA" not in text:
 
 # 2) App label
 text = manifest.read_text()
-text = re.sub(r'android:label="[^"]*"', 'android:label="Holos"', text, count=1)
+text = re.sub(r'android:label="[^"]*"', 'android:label="Gabay"', text, count=1)
 manifest.write_text(text)
 
 # 3) Force older plugins to compile against a newer Android SDK
 #    (some plugins still say compileSdk 33, but their libraries need 34+).
-KTS_BLOCK = '''// Holos: compile every Android library plugin against SDK 36
+KTS_BLOCK = '''// Gabay: compile every Android library plugin against SDK 36
 subprojects {
     afterEvaluate {
         if (plugins.hasPlugin("com.android.library")) {
@@ -39,7 +39,7 @@ subprojects {
 }
 
 '''
-GROOVY_BLOCK = '''// Holos: compile every Android library plugin against SDK 36
+GROOVY_BLOCK = '''// Gabay: compile every Android library plugin against SDK 36
 subprojects {
     afterEvaluate { p ->
         if (p.plugins.hasPlugin("com.android.library")) {
@@ -54,7 +54,7 @@ for name, block in (("build.gradle.kts", KTS_BLOCK), ("build.gradle", GROOVY_BLO
     if not rootGradle.exists():
         continue
     g = rootGradle.read_text()
-    if "Holos: compile every" not in g:
+    if "Gabay: compile every" not in g:
         idx = g.find("allprojects")
         g = (g[:idx] + block + g[idx:]) if idx >= 0 else (block + g)
         rootGradle.write_text(g)

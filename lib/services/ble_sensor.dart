@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-/// Connects to the Holos ESP32 sensor (see esp32/holos_sensor).
+/// Connects to the Gabay ESP32 sensor (see esp32/gabay_sensor).
 /// The sensor sends text like "412,36.5" = gas reading, temperature in °C.
 class BleSensor {
-  static const deviceName = 'Holos-Sensor';
+  static const deviceName = 'Gabay-Sensor';
   static final serviceUuid = Guid('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
   static final dataUuid = Guid('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
 

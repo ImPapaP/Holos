@@ -16,11 +16,11 @@ class OnboardingScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Text('Holos',
-                style: TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: HolosColors.accent, height: 1)),
+            const Text('Gabay',
+                style: TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: GabayColors.accent, height: 1)),
             const SizedBox(height: 10),
             const Text('One app for every sense. Choose the profile that fits you. You can change it later in Settings.',
-                style: TextStyle(fontSize: 18, color: HolosColors.mute)),
+                style: TextStyle(fontSize: 18, color: GabayColors.mute)),
             const SizedBox(height: 20),
             for (final entry in profiles.entries) ...[
               BigTile(

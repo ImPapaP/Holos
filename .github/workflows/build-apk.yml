@@ -27,7 +27,7 @@ jobs:
       - name: Create Android project shell (first build only)
         run: |
           if [ ! -d android ]; then
-            flutter create --org ph.edu.bulsu --project-name holos --platforms android .
+            flutter create --org ph.edu.bulsu --project-name gabay --platforms android .
             rm -rf test
           fi
 
@@ -41,20 +41,20 @@ jobs:
         run: flutter build apk --release
 
       - name: Rename APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk holos.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk gabay.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: holos-apk
-          path: holos.apk
+          name: gabay-apk
+          path: gabay.apk
 
       - name: Publish download on Releases page
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
-          name: Holos build ${{ github.run_number }}
+          name: Gabay build ${{ github.run_number }}
           body: |
-            Download **holos.apk** below and open it on an Android phone (Android 7 or newer).
+            Download **gabay.apk** below and open it on an Android phone (Android 7 or newer).
             Allow "Install unknown apps" when asked.
-          files: holos.apk
+          files: gabay.apk

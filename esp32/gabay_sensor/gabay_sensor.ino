@@ -1,12 +1,12 @@
 /*
-  Holos Sensor - ESP32 gas/smoke + temperature sensor over Bluetooth LE.
+  Gabay Sensor - ESP32 gas/smoke + temperature sensor over Bluetooth LE.
 
   Parts:
     - ESP32 DevKit (any ESP32 with BLE)
     - MQ-2 gas/smoke sensor  -> analog out to GPIO 34 (use a voltage divider: MQ-2 outputs up to 5V)
     - LM35 temperature sensor -> analog out to GPIO 35
   Sends text "gas,tempC" (example: "412,36.5") once per second.
-  The Holos app connects to the device named "Holos-Sensor".
+  The Gabay app connects to the device named "Gabay-Sensor".
 
   Arduino IDE: install "esp32" boards by Espressif, select your ESP32 board, upload.
   Let the MQ-2 warm up ~2 minutes before trusting readings, then calibrate gasLimit in the app.
@@ -37,7 +37,7 @@ void setup() {
   Serial.begin(115200);
   analogReadResolution(12);
 
-  BLEDevice::init("Holos-Sensor");
+  BLEDevice::init("Gabay-Sensor");
   BLEServer *server = BLEDevice::createServer();
   server->setCallbacks(new ServerCallbacks());
   BLEService *service = server->createService(SERVICE_UUID);
@@ -49,7 +49,7 @@ void setup() {
   adv->addServiceUUID(SERVICE_UUID);
   adv->setScanResponse(true);
   BLEDevice::startAdvertising();
-  Serial.println("Holos-Sensor advertising");
+  Serial.println("Gabay-Sensor advertising");
 }
 
 void loop() {

@@ -79,7 +79,7 @@ class _SosScreenState extends State<SosScreen> {
 
   String get _message {
     final who = AppState.I.caregiverName.isEmpty ? '' : '${AppState.I.caregiverName}, ';
-    return '${who}SOS from Holos: ${widget.reason}. I need help.${_mapLink != null ? ' My location: $_mapLink' : ''}';
+    return '${who}SOS from Gabay: ${widget.reason}. I need help.${_mapLink != null ? ' My location: $_mapLink' : ''}';
   }
 
   Future<void> _sendSms() async {
@@ -119,7 +119,7 @@ class _SosScreenState extends State<SosScreen> {
   Widget build(BuildContext context) {
     final counting = widget.countdown && _left > 0 && (_tick?.isActive ?? false);
     return Scaffold(
-      backgroundColor: HolosColors.danger,
+      backgroundColor: GabayColors.danger,
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onLongPressStart: (_) => _hold = Timer(const Duration(milliseconds: 1500), _cancel),

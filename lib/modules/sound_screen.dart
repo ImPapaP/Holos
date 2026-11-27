@@ -131,7 +131,7 @@ class _SoundScreenState extends State<SoundScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           const Text('Alerts you to loud sounds by vibration and screen flashes. Live captions turn speech into large text.',
-              style: TextStyle(color: HolosColors.mute, fontSize: 17)),
+              style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _toggleAlerts,
@@ -139,15 +139,15 @@ class _SoundScreenState extends State<SoundScreen> {
           ),
           const SizedBox(height: 12),
           Text(_alertsOn ? 'Sound level: ${_db.toStringAsFixed(0)} dB (estimate)' : 'Sound level',
-              style: const TextStyle(color: HolosColors.mute)),
+              style: const TextStyle(color: GabayColors.mute)),
           const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(11),
             child: LinearProgressIndicator(
               value: level,
               minHeight: 22,
-              backgroundColor: HolosColors.card,
-              color: level > 0.65 ? HolosColors.danger : HolosColors.ok,
+              backgroundColor: GabayColors.card,
+              color: level > 0.65 ? GabayColors.danger : GabayColors.ok,
             ),
           ),
           const SizedBox(height: 8),
@@ -155,7 +155,7 @@ class _SoundScreenState extends State<SoundScreen> {
             listenable: AppState.I,
             builder: (context, _) => Row(
               children: [
-                const Text('Sensitivity', style: TextStyle(color: HolosColors.mute)),
+                const Text('Sensitivity', style: TextStyle(color: GabayColors.mute)),
                 Expanded(
                   child: Slider(
                     value: AppState.I.soundSensitivity,
@@ -169,7 +169,7 @@ class _SoundScreenState extends State<SoundScreen> {
               ],
             ),
           ),
-          if (_error.isNotEmpty) Text(_error, style: const TextStyle(color: HolosColors.danger, fontWeight: FontWeight.w700)),
+          if (_error.isNotEmpty) Text(_error, style: const TextStyle(color: GabayColors.danger, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: _toggleCaptions,
@@ -179,23 +179,23 @@ class _SoundScreenState extends State<SoundScreen> {
           Container(
             constraints: const BoxConstraints(minHeight: 180),
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: HolosColors.card, borderRadius: BorderRadius.circular(18)),
+            decoration: BoxDecoration(color: GabayColors.card, borderRadius: BorderRadius.circular(18)),
             child: Semantics(
               liveRegion: true,
               child: Text(_caption, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, height: 1.25)),
             ),
           ),
           const SectionLabel('Recent alerts'),
-          if (_log.isEmpty) const Text('No alerts yet', style: TextStyle(color: HolosColors.mute)),
+          if (_log.isEmpty) const Text('No alerts yet', style: TextStyle(color: GabayColors.mute)),
           for (final (text, at) in _log)
             Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(color: HolosColors.card, borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: GabayColors.card, borderRadius: BorderRadius.circular(12)),
               child: Row(
                 children: [
                   Expanded(child: Text(text)),
-                  Text(TimeOfDay.fromDateTime(at).format(context), style: const TextStyle(color: HolosColors.mute)),
+                  Text(TimeOfDay.fromDateTime(at).format(context), style: const TextStyle(color: GabayColors.mute)),
                 ],
               ),
             ),

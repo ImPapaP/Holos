@@ -41,7 +41,7 @@ class _CalmScreenState extends State<CalmScreen> {
         now.difference(_loudSince!).inSeconds >= 3 &&
         now.difference(_lastWarn).inSeconds >= 20) {
       _lastWarn = now;
-      Output.notify(S.t('noisy'), Haptics.gentle, color: HolosColors.calm);
+      Output.notify(S.t('noisy'), Haptics.gentle, color: GabayColors.calm);
     }
     if (mounted) setState(() => _db = db);
   }
@@ -115,28 +115,28 @@ class _CalmScreenState extends State<CalmScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = _db < 55 ? ('Calm', HolosColors.ok) : (_db < 70 ? ('Busy', HolosColors.accent) : ('Loud', HolosColors.danger));
+    final state = _db < 55 ? ('Calm', GabayColors.ok) : (_db < 70 ? ('Busy', GabayColors.accent) : ('Loud', GabayColors.danger));
     return Scaffold(
       appBar: AppBar(title: const Text('Calm')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           const Text('Watches the noise around you and warns before it gets overwhelming. Follow the breathing buzz to settle down.',
-              style: TextStyle(color: HolosColors.mute, fontSize: 17)),
+              style: TextStyle(color: GabayColors.mute, fontSize: 17)),
           const SizedBox(height: 16),
           FilledButton(onPressed: _toggleMonitor, child: Text(_monitoring ? 'Stop noise monitor' : 'Start noise monitor')),
           const SizedBox(height: 14),
           Text(_monitoring ? '${_db.toStringAsFixed(0)} dB' : '--',
               style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900)),
           Text(_monitoring ? 'Noise level (estimate): ${state.$1}' : 'Noise level (estimate)',
-              style: const TextStyle(color: HolosColors.mute)),
+              style: const TextStyle(color: GabayColors.mute)),
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(11),
             child: LinearProgressIndicator(
               value: _monitoring ? ((_db - 30) / 80).clamp(0.0, 1.0) : 0,
               minHeight: 22,
-              backgroundColor: HolosColors.card,
+              backgroundColor: GabayColors.card,
               color: state.$2,
             ),
           ),
@@ -154,7 +154,7 @@ class _CalmScreenState extends State<CalmScreen> {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       center: Alignment(-0.3, -0.3),
-                      colors: [Color(0xFFFFF3B0), HolosColors.accent, Color(0xFFC99A10)],
+                      colors: [Color(0xFFFFF3B0), GabayColors.accent, Color(0xFFC99A10)],
                     ),
                   ),
                 ),
@@ -172,7 +172,7 @@ class _CalmScreenState extends State<CalmScreen> {
           ),
           const SizedBox(height: 8),
           const Text('Breathe in with the quick buzzes, out with the slow ones.',
-              textAlign: TextAlign.center, style: TextStyle(color: HolosColors.mute)),
+              textAlign: TextAlign.center, style: TextStyle(color: GabayColors.mute)),
         ],
       ),
     );

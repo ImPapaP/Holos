@@ -316,7 +316,7 @@ class _SightScreenState extends State<SightScreen> {
                                 fontSize: 32,
                                 fontWeight: FontWeight.w800,
                                 height: 1.1,
-                                color: _paused ? HolosColors.mute : Colors.white)),
+                                color: _paused ? GabayColors.mute : Colors.white)),
                         const SizedBox(height: 6),
                         Text(_meta, style: const TextStyle(color: Colors.white70, fontSize: 15)),
                       ],
@@ -366,13 +366,13 @@ class _BoxPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 4
-          ..color = isTarget ? HolosColors.accent : Colors.white54,
+          ..color = isTarget ? GabayColors.accent : Colors.white54,
       );
       final label = o.labels.isNotEmpty ? o.labels.first.text : 'Object';
       final tp = TextPainter(
         text: TextSpan(
             text: ' $label ',
-            style: TextStyle(color: Colors.black, fontSize: 15, backgroundColor: isTarget ? HolosColors.accent : Colors.white70)),
+            style: TextStyle(color: Colors.black, fontSize: 15, backgroundColor: isTarget ? GabayColors.accent : Colors.white70)),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(r.left, max(0, r.top - tp.height)));

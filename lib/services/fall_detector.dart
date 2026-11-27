@@ -7,7 +7,7 @@ import '../core/app_state.dart';
 import '../modules/sos_screen.dart';
 
 /// Detects a hard impact followed by stillness using the accelerometer.
-/// Works while Holos is open. A background service is a future improvement.
+/// Works while Gabay is open. A background service is a future improvement.
 class FallDetector {
   FallDetector._();
   static final FallDetector I = FallDetector._();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class HolosColors {
+class GabayColors {
   static const bg = Color(0xFF0B0B0C);
   static const card = Color(0xFF1C1C1F);
   static const line = Color(0xFF2E2E33);
@@ -13,28 +13,28 @@ class HolosColors {
 }
 
 /// High-contrast dark theme with large text and big touch targets.
-ThemeData holosTheme() {
+ThemeData gabayTheme() {
   final base = ThemeData.dark(useMaterial3: true);
   return base.copyWith(
-    scaffoldBackgroundColor: HolosColors.bg,
+    scaffoldBackgroundColor: GabayColors.bg,
     colorScheme: const ColorScheme.dark(
-      primary: HolosColors.accent,
+      primary: GabayColors.accent,
       onPrimary: Colors.black,
-      secondary: HolosColors.accent,
-      surface: HolosColors.card,
-      error: HolosColors.danger,
+      secondary: GabayColors.accent,
+      surface: GabayColors.card,
+      error: GabayColors.danger,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: HolosColors.bg,
-      foregroundColor: HolosColors.ink,
+      backgroundColor: GabayColors.bg,
+      foregroundColor: GabayColors.ink,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HolosColors.accent),
+      titleTextStyle: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: GabayColors.accent),
     ),
-    textTheme: base.textTheme.apply(bodyColor: HolosColors.ink, displayColor: HolosColors.ink, fontSizeFactor: 1.15),
+    textTheme: base.textTheme.apply(bodyColor: GabayColors.ink, displayColor: GabayColors.ink, fontSizeFactor: 1.15),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size.fromHeight(72),
-        backgroundColor: HolosColors.accent,
+        backgroundColor: GabayColors.accent,
         foregroundColor: Colors.black,
         textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -43,15 +43,15 @@ ThemeData holosTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(64),
-        foregroundColor: HolosColors.ink,
-        side: const BorderSide(color: HolosColors.line, width: 2),
+        foregroundColor: GabayColors.ink,
+        side: const BorderSide(color: GabayColors.line, width: 2),
         textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: HolosColors.card,
+      fillColor: GabayColors.card,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
     ),
   );
